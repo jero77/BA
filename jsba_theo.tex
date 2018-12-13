@@ -1,0 +1,19 @@
+%!TEX root = jsba_main.tex
+% Theoretical background 
+
+\section{Theoretical Background}
+\label{sec:theo}
+
+\subsection{Distributed Databases}
+\label{subs:ddb}
+
+A \emph{distributed database}~(DDB) can be defined as multiple, logically interconnected databases spread across a computer network~\cite[p.~4]{Ozsu1991}, such that the physical presence of the data may be dispersed spatially instead of having one single database hoarding all the data at a certain location physically. 
+On top of this DDB, there is often a so-called \emph{distributed database management system}~(DDBMS) which manages the underlying databases, and the users are 
+enabled to access and work with the DDB without noticing the physically distribution, i.e. in a transparent manner~\citep{Ozsu1991}. This results, from the point
+of view of a user, in a logically single database, which can be queried in the same way as a non-distributed database. Furthermore, users can benefit from a
+physical distribution of the data depending on an architectural design because they can communicate with the geographically closest site where one of the 
+databases resides reducing the network communication delay, and concurrent access of the DDB can be handled in a distributed way, too, exploiting the fact that 
+more servers imply more computing power for the \emph{distributed database system} (DDBS).
+
+A DDBMS can be \emph{homogenous} or \emph{heterogenous} where in a homogenous DDBMS all participating sites share the same DBMS locally and in a heterogenous
+DDBMS the sites may have a different DBMS with probably different data models.

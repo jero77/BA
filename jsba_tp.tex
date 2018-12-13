@@ -9,16 +9,15 @@
 
 \Rule\vspace{5mm}
 \sffamily\bfseries\Huge
-Siehe nächste Seite für Titledrafts
+See next page for title drafts
 \vspace{1mm}\Rule
 \vfill
-\sffamily\bfseries\LARGE Bachelorarbeit
+\sffamily\bfseries\LARGE Bachelor Thesis
 \vfill
-\sffamily\bfseries\Large Jero Mario Schäfer\par
-Fachbereich Angewandte Informatik\par
+\sffamily\bfseries\Large Jero Mario Schäfer\par Mat.nr.: 21552103\par Applied Informatics\par
 \vfill
 
-\raisebox{7mm}{Georg-August-Universität}
+\raisebox{7mm}{Georg-August-University}
 %\includegraphics[height=xxmm]{unilogo.pdf}
 \raisebox{7mm}{Göttingen}\par
 \vfill
@@ -28,6 +27,7 @@ Fachbereich Angewandte Informatik\par
 
 \newpage
 \paragraph{Titledrafts}
+\todo[inline]{Chose a title of the following ones \ldots or another one}
 \begin{enumerate}
     \item Implementation of a distributed database system/DDBMS with support for flexible (SQL) query answering
     \item Implementation of a distributed medical/clinical information system supporting query relaxation/flexible
@@ -36,6 +36,8 @@ Fachbereich Angewandte Informatik\par
             similarities if Medical Subject Headings (MeSH)
     \item Implementation of a clustering-based (and derived) fragmentation to support flexible query answering in a
             distributed disease/patient information system
+    \item Implementation of a distributed database using a similarity-based clustering for a medical information system
+            with flexible query answering
 \end{enumerate}
 
 Fragen:
@@ -51,10 +53,10 @@ Fragen:
 \paragraph{Roter Faden für die Einleitung}
 
 \begin{itemize}
-    \item DDBMS
+    \item Distributed Database
     \begin{itemize}
         \item Was ist das?
-        \item Vorteile, \begin{quote}Heute\end{quote}
+        \item Vorteile, "Heute"
         \item ? Herausforderungen (-> in Bezug auf Anfragebeantwortung?)
         \item ? Apache Ignite?
     \end{itemize}
@@ -77,3 +79,30 @@ Fragen:
                 (\textrightarrow\,Inwiefern unterstützen o.g. Punkte das?)
     \end{itemize}
 \end{itemize}
+
+
+
+\paragraph{Theorieteil}
+
+Alles etwas formaler? (Def. 1.: ..., Def. 2.: ... , Text ...)
+Noch ein Schritt vor? Relationale Datenbanken, Relationales Datenmodell, ...
+
+MeSH, UMLS ?
+
+\begin{itemize}
+    \item DDBs
+    \begin{itemize}
+        \item Begriffserklärungen/-definitionen\textrightarrow Glossar??? Abkürzungsverzeichnis???
+        \item Architektur (Client-Server, Data/Computing Nodes, homogen/heterogen)
+        \item Konzepte, Replikation und Fragmentierung (Datenverteilung)
+        \item Distributed SQL, Query processing/optimization???
+    \end{itemize}
+    
+    \item ...
+\end{itemize}
+
+
+
+
+% TODO-List
+\listoftodos

@@ -11,10 +11,15 @@
 \usepackage[english]{babel}
 \usepackage{moreverb}
 \usepackage{textcomp}
+\usepackage{url}
     % natbib
 \usepackage[square,numbers]{natbib}
 \usepackage[nottoc]{tocbibind}
-\usepackage{url}
+\bibliographystyle{unsrtnat}
+\setcitestyle{authoryear}
+    % todo
+\usepackage{todonotes}
+
 
 % Distances, etc.
 \setlength{\parindent}{0mm}
@@ -33,19 +38,25 @@
 \newpage
 \input{jsba_intro}
 
-% ...
+% Theoretical Background: Distributed Databases, ...
 \newpage
+\input{jsba_theo}
 
+% Implementation
+\newpage
+\input{jsba_impl}
 
+% Results
+\newpage
+\input{jsba_res}
 
-% Anhang
+% Appendix
 \newpage
 \appendix
 \input{jsba_app}
 
-% Literaturverzeichnis
+% Bibliography
 \newpage
-\bibliographystyle{unsrtnat}
 \bibliography{literature}
 
 \end{document}
