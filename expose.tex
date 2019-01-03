@@ -1,0 +1,131 @@
+% Expose zur Bachelorarbeit
+
+\documentclass[a4paper, 11pt]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[german]{babel}
+\usepackage{moreverb}
+\usepackage{textcomp}
+\usepackage{url}
+    % natbib
+\usepackage[square,numbers]{natbib}
+\usepackage[nottoc]{tocbibind}
+\bibliographystyle{unsrtnat}
+\setcitestyle{authoryear}
+    % math
+\usepackage{mathtools}
+
+\usepackage{caption}
+
+
+
+\selectlanguage{german}
+\begin{document}
+%Titelseite
+\newpage
+\thispagestyle{empty}
+\newcommand{\Rule}{\rule{\textwidth}{1mm}}
+
+\begin{center}
+
+\Rule\vspace{5mm}
+\sffamily\bfseries\LARGE Exposé \par
+\sffamily\bfseries\Huge Similarity-based query answering for medical information systems
+\vspace{1mm}\Rule
+\vfill
+\sffamily\bfseries\LARGE Bachelor-Thesis
+\vfill
+\sffamily\bfseries\Large Jero Mario Schäfer\par Matrikelnr.: 21552103\par Angewandte Informatik\par
+\vfill
+
+\raisebox{7mm}{Georg-August-Universität}
+%\includegraphics[height=xxmm]{unilogo.pdf}
+\raisebox{7mm}{Göttingen}\par
+\vfill
+Abgabedatum: 01.04.19
+\end{center}
+
+
+
+
+\newpage
+\section{Einleitung}
+
+Medizinische Informationssysteme dienen der Speicherung, Auswertung und Verarbeitung patientenbezogener Daten. So könnte zum Beispiel eine einfache Datenbank
+wie folgt aussehen. In der Tabelle~\ref{tab:info} sind die persönlichen Informationen der Patienten wie z.B. Name und Alter gespeichert. Die 
+Patienten besitzen zudem einen eindeutigen Identifikator, der zufällig bestimmt werden kann. Des Weiteren gibt es zusätzlich zu den persönlichen Daten noch
+die Tabelle~\ref{tab:disease}, die sowohl Auskunft über die Erkrankungen geben, an denen die zu behandelnden Patienten leiden, als auch bspw. Daten über die
+durchgeführten bzw. durchzuführenden Behandlungen enthalten könnte: 
+\\
+\newcommand{\textoverline}[1]{$\overline{\mbox{#1}}$}
+\begin{center}
+\begin{tabular}{*{4}l} 
+     \underline{ID} & Name & Address & Age \\
+     \hline
+     1951 & John Miller & New street 5, 44579 Newtown & 28 \\
+     4431 & Mary Smith & Green way 15, 23240 Abcity & 47 \\
+     0056 & Taylor Banks & On the line 90, 11005 Nington & 71 \\
+\end{tabular}
+\captionof{table}{Patienten Informationen} \label{tab:info}
+\end{center}
+
+\begin{center}
+\begin{tabular}{*{4}l} 
+     \underline{ID} & \textoverline{PatientID} & Disease & Treatment\\
+     \hline
+     92840 & 1951 & Cough & Antitussive \\
+     12748 & 4431 & Influenza & Antiviral Medication\\
+     12091 & 0056 & Bronchitis & Bronchodilator \\
+     75634 & 1951 & Asthma &  Inhalator \\
+\end{tabular}
+\captionof{table}{Erkrankungen} \label{tab:disease}
+\end{center}
+
+
+
+Dabei referenziert ein Tupel der Tabelle über Erkrankungen jeweils einen Patienten mittels seines Identifikators und stellt somit den Zusammenhang zwischen 
+den beiden Relationen her. Die Primärschlüssel sind in den Tabellenabbildungen durch Unterstreichungen und die Fremdschlüssel durch Überstreichungen 
+gekennzeichnet.
+
+
+Ein solches Informationssystem ist zum Einen nützlich und sogar notwendig für die behandelnden Ärzte und Krankenpfleger innerhalb eines Krankenhauses, aber zum
+Anderen auch wichtig für die administrativen Aufgaben, die in einem Krankenhaus anfallen. Außerdem könnten auch Hausärzte oder Fachärzte außerhalb eines 
+Krankenhauses durch Zugriff auf die Daten über die Erkrankungen ihrer Patienten profitieren. Da die anfallenden Datenmengen mitunter sehr groß sein können, 
+bietet es sich an nicht nur eine einzelne Datenbank zu haben sondern ein verteiltes Datenbanksystem zu nutzen, das die großen Datenmengen durch die 
+physikalische Aufteilung der Daten auf verschiedene Server, welche alle eine Datenbank bzw. einen Teil der gesamten, verteilten Datenbank beherbergen und
+verwalten, handhaben kann. Um die Daten hierbei sinnvoll aufzuteilen, kann man bspw. eine horizontale Fragmentierung, also eine zeilenweise Aufteilung der 
+Tabellen auf verschiedene Server, anwenden. Die dadurch resultierende Partitionierung der Relationen stellt eine Unterteilung der Daten in kleinere Teilmengen
+dar, die letztendlich über das Netzwerk verteilt werden können.
+
+
+Ziel dieser Arbeit ist es, anhand des Beispiels eines medizinischen Informationssystems ein verteiltes Datenbanksystem zu implementieren, welches aufgrund 
+eines Maßes für Ähnlichkeit von Krankheiten ein \emph{Clustering} der Erkrankungsrelation bestimmt, um darauf aufbauend eine horizontale Fragmentierung der 
+Daten zu erhalten und infolgedessen eine abgeleitete Fragmentierung der persönlichen Daten der Patienten zu ermitteln, die bewirkt, dass die Tupel, welche 
+Namen, Adresse, Alter, etc. enthalten, zusammen mit den Informationen über die Erkrankungen eines Patienten abgespeichert werden.
+Dies ermöglicht eine intelligente Anfragebearbeitung, bei der Informationen aus den beiden Relationen mittels eines Joins lokal verknüpft werden können, 
+da die Tupel nicht erst über das Netzwerk von einem zum nächsten Datenbankserver gesendet werden müssen, wie es der Fall sein könnte, wenn die Daten nicht
+zusammen abgelegt werden. Des Weiteren soll dieses System im Falle einer Anfrage mit einer Selektionsbedingung auf dem Krankheitsattribut der 
+Tabelle~\ref{tab:disease}, sofern sie kein exaktes Ergebnis liefern kann, dem Nutzer ermöglichen, die Anfrage \emph{flexibel} mit Hilfe der Ähnlichkeit 
+zwischen Erkrankungen zu beantworten. Dabei wird die Anfrage des Nutzers generalisiert, wodurch ggf. Antworten von der Datenbank zurückgeliefert werden können,
+sodass der Nutzer zu der ursprünglich gestellten Anfrage ähnliche Antworten erhalten kann, die aus seiner Sicht nützliche und wertvolle Informationen 
+darstellen könnten.
+
+
+\defcitealias{Ignite}{Apache Ignite\texttrademark}
+\defcitealias{MeSH}{Medical Subject Headings (MeSH\textcopyright)}
+\defcitealias{UMLS::Sim}{UMLS::Similarity}
+\defcitealias{UMLS}{Unified Medical Language System (UMLS)}
+Die Implementation soll auf Basis einer \citetalias{Ignite} Datenbank (siehe~\url{https://ignite.apache.org/}) erfolgen. Die beispielhaften Patientendaten 
+werden randomisiert erzeugt und gespeichert, wobei die Krankheiten auf dem in der \citetalias{MeSH}
+(siehe~\url{https://meshb.nlm.nih.gov/search}) Datenbank der U.S. National Library of Medicine festgelegten Vokabular basiert. Zur Bestimmung der Ähnlichkeit
+zweier Terme, die Erkrankungen beschreiben, wird ein Tool des \citetalias{UMLS::Sim} Moduls (siehe~\url{http://umls-similarity.sourceforge.net/}) herangezogen.
+Das Modul unterstützt dabei die Ontologien, wie bspw. MeSH, des \citetalias{UMLS}.
+Die Arbeit basiert maßgeblich auf dem Artikel \citet{Wiese2014}, in dem die theoretischen Grundlagen sowie praktische Aspekte zu dem Thema untersucht werden.
+
+
+\newpage
+\bibliography{literature}
+\end{document}}
