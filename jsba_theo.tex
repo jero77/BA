@@ -9,19 +9,18 @@
 
 \subsubsection{Terminology}
 \label{sec:theo_ddb_term}
-A \emph{distributed database}~(DDB) can be defined as multiple, logically interconnected databases spread across a computer network~\cite[p.~4]{Ozsu1991}, such 
-that the physical presence of the data may be dispersed spatially instead of having one single database hoarding all the data at a certain location physically. 
-On top of this DDB, there is often a so-called \emph{distributed database management system}~(DDBMS) which manages the underlying databases and the access to the
-data, and the users are enabled to work with the data of the DDB without noticing the physically distribution, i.e. in a transparent 
+A \emph{distributed database}~(DDB) can be defined as multiple, logically interconnected databases spread across a computer network~\cite[p.~4]{Ozsu1991}, such
+that the physical presence of the data may be dispersed spatially instead of having one single database hoarding all the data at a certain location physically.
+On top of this DDB, there is often a so-called \emph{distributed database management system}~(DDBMS) which manages the underlying databases and the access to 
+the data, and the users are enabled to work with the data of the DDB without noticing the physically distribution, i.e. in a transparent 
 manner~\cite[p.~4f.]{Ozsu1991}.
-This results, from the point of view of a user, in a logically single database, which can be queried in the same way as a non-distributed database. Furthermore, 
-users can benefit from a physical distribution of the data depending on an architectural design because they can communicate with the geographically closest site 
-where one of the databases resides reducing the network communication delay, and concurrent access of the DDB can be handled in a distributed way, too, exploiting 
-the fact that more servers imply more computing power for the \emph{distributed database system}~(DDBS). Additionally, a DDBS can provide an improved availability
-compared to a non-distributed database when the data is replicated. This implies that the data can be reached from multiple sites even if there is a failure of one
-of the databases or of parts of the communication network. In this way, users will have a chance to be able to still retrieve the data regardless of parts of the
-database being not available.
-
+This results, from the point of view of a user, in a logically single database, which can be queried in the same way as a non-distributed database. 
+Furthermore, users can benefit from a physical distribution of the data depending on an architectural design because they can communicate with the 
+geographically closest site where one of the databases resides reducing the network communication delay, and concurrent access of the DDB can be handled in a 
+distributed way, too, exploiting the fact that more servers imply more computing power for the \emph{distributed database system}~(DDBS). Additionally, a DDBS 
+can provide an improved availability compared to a non-distributed database when the data is replicated. This implies that the data can be reached from 
+multiple sites even if there is a failure of one of the databases or of parts of the communication network. In this way, users will have a chance to be able
+to still retrieve the data regardless of parts of the database being not available.
 
 A DDBMS can be \emph{homogenous} or \emph{heterogenous} where in a homogenous DDBMS all participating sites share the same DBMS locally and in a heterogenous
 DDBMS the sites may have a different DBMS with probably different data models. \todo[inline]{... ?!?!}
@@ -29,22 +28,41 @@ DDBMS the sites may have a different DBMS with probably different data models. \
 
 \subsubsection{Fragmentation}
 \label{sec:theo_ddb_frag}
-The relations of distributed databases can be partitioned into fragments of the relations, i.e. the data from the tables is split up and assigned to one or more
-of the databases that belong to the DDBS. This \emph{fragmentation} can be achieved by using a certain fragmentation strategy. The resulting fragments can then
-be dispersed across the network by mapping the fragments to databases.
-One strategy to obtain a fragmentation of the data is the \emph{horizontal fragmentation} \cite[p.~105ff.]{Ozsu1991} that divides a relation into smaller 
-portions with only some of tuples that were contained in the original relation, i.e. a relation $R$ can be divided into fragments $F_1, F_2,\dots, F_n$ by 
-assigning each tuple $\mu$ of the relation $R$ to a fragment $F_i,~i\in\{1,\dots,n\}$. The result of this is that for all $i\in\{1,\dots,n\}, F_i \subseteq R$.
-\todo[inline]{derived frag}
-\par
-On the other hand, a \emph{vertical fragmentation} \cite[p.~122ff.]{Ozsu1991} is a columnwise division of a relation $R$, such that each of the resulting
+The relations of distributed databases can be partitioned into fragments of the relations, i.e. the data from the tables is split up and assigned to one or 
+more of the databases that belong to the DDBS. The amount of data per database can be reduced by doing so. This \emph{fragmentation} can be achieved by using
+a certain fragmentation strategy and the resulting fragments, which contain parts of the whole data set, can then be dispersed across the network by mapping
+the fragments to databases that possibly reside at different physical locations which are not necessarily geographically distant. The in the following 
+introduced fragmentation alternatives will be elucidated by ways of small "toy" examples in Example \ref{sec:theo_ddb_exmp}.
+
+One strategy to obtain a fragmentation of the data is the so-called \emph{horizontal fragmentation} \cite[p.~105]{Ozsu1991} that divides a relation in a 
+row-wise manner into smaller portions with only some of tuples that were contained in the original relation, i.e. a relation $R$ can be divided into fragments
+$F_1, F_2,\dots, F_n$ by assigning each tuple $\mu$ of the relation $R$ to at least one fragment $F_i,~i\in\{1,\dots,n\}$. The result of this is that for all 
+$i\in\{1,\dots,n\},~F_i \subseteq R$. Additionally, if there is no replication (cf. Section~\ref{sec:theo_ddb_repl}) applied to the data and each tuple is only
+assigned to exactly one fragment, the fragments are pairwise disjoint ($\forall \mu \in F_i$ it holds that $\mu \notin F_j, i\neq j, i,j\in\{1,\dots,n\}$) 
+if the relation $R$ does not contain any duplicate tuples itself. In the relational algebra such a \emph{primary horizontal fragmentation} can be described by
+a selection operation on the relation $R$ \cite[p.~109]{Ozsu1991}, whereas the selection condition defines the wanted mapping of tuples to fragments. 
+Regarding this primary horizontal fragmentation, a further fragmentation of another relation $S$ can be \emph{derived} by computing the semi-join of the
+relation $S$ with fragments $F_i,~i\in\{1,\dots,n\}$ of the primary relation $R$ \cite[p.~116f.]{Ozsu1991}, i.e. the derived fragments $G_i$ of the relation
+$S$ are computed as $G_i=S \ltimes F_i$ for $i\in\{1,\dots,n\}$. The \emph{derived horizontal fragmentation} depends on the underlying primary horizontal
+fragmentation, and, to prevent tuples in $S$ from getting lost during the semi-join with fragments of $R$, it is necessary to have for each tuple $y\in S$ 
+matching tuples in $R$ in order to let the tuples from $S$ "survive" the semi-join. An integrity constraint in form of a foreign key reference of the relation
+$S$ to the relation $R$ can be used to enforce this condition for the sake of completeness of the derived fragmentation. Though with the definition of the 
+derived horizontal fragmentation on a semi-join, inherently replication of tuples of $S$ in the derived fragments may occur if tuples in $S$ match multiple
+tuples that belong to different fragments of $R$ \cite[p.~121]{Ozsu1991}. This causes the fragments $G_i$ of $S$ not to be disjoint in general.
+
+
+On the other hand, a \emph{vertical fragmentation} \cite[p.~122]{Ozsu1991} is a columnwise division of a relation $R$, such that each of the resulting
 fragments $F_1,F_2,\dots,F_n$ has a subset of the attributes of the relation $R$. To identify the original tuple to which a partitioned tuple of one of the
 fragments belongs to, it is necessary to have a primary key defined on the relation $R$ which can be stored with the subset of attributes of the tuple that is
 assigned to a fragment. If it is not the case that a primary key is set for the relation $R$, then an abstract, maybe randomly generated unique identifier has 
-to be introduced, i.e. as additional attribute, to match tuple fragments to their source.
+to be introduced, i.e. as additional attribute, in order to match tuple fragments to their source. 
 
+Another fragmentation strategy, which will only be mentioned here and not further analyzed, is the so-called \emph{hybrid fragmentation} or 
+\emph{nested fragmentation} \cite[p.~135f.]{Ozsu1991} that can be achieved by nesting horizontal and vertical fragmentations on a relation giving a complex
+partitioning of the data and arising lots of issues to consider when implementing an application based on data that is fragmented by such type of fragmentation
+strategy.
 
-\begin{exmp}
+\begin{exmp} \label{sec:theo_ddb_exmp}
 $ $\newline
     \begin{center}
     \begin{tabular}{c|c} 
@@ -56,43 +74,134 @@ $ $\newline
          3 & z \\
          7 & g \\
     \end{tabular}
-    \captionof{table}{Relation $R$ with the two attributes $a$ and $b$} \label{tab:r}
+    \captionof{table}{Relation $R$ with primary key $a$ and attribute $b$ (foreign key on $S.b$; see Table~\ref{tab:s})}
+    \label{tab:r}
     \end{center}
 $ $\newline
-Consider having three servers $S_1$, $S_2$ and $S_3$ and three fragments $F_i,i\in\{1,2,3\}$, of the relation $R=\{(0,x), (1,x), (2,y), (3,z), (7,g)\}$, 
-as shown in Table~\ref{tab:r}, where for the sake of simplicity fragment $F_i$ is placed on server $S_i$. 
-A possible horizontal fragmentation is $F_1=\{(0,x), (3,z)\}$, $F_2=\{(1,x), (7,g)\}$ and $F_3=\{(2,y)\}$. This fragmentation is illustrated 
-by Table~\ref{tab:r_frag}. Here, each row of the table, i.e. each $\mu \in R$, is assigned to exactly one of the fragments $F_i,~i\in\{1,2,3\}$, 
-so there is no duplication of any tuple and the fragments are pairwise disjoint, $F_i \neq F_j$ for $i,j \in \{1,2,3\}$ with $i \neq j$, 
-but each tuple $\mu \in R$ is contained in one of the fragments. Hence, the union $F_1 \cup F_2 \cup F_3$ of all the fragments yields the original tuple set,
-which means that the partitioned relation $R$ can be reconstructed from the fragments, because each of the original tuples is found in (at least) one
-fragment. Due to the fact that this primary horizontal fragmentation is complete and disjoint and that fragmentation can be reverted by reconstruction of the
-original relation, the three fragmentation correctness rules \cite[p.~103]{Ozsu1991} are fulfilled.
+Consider having three fragments $F_1$, $F_2$ and $F_3$ of the relation $R$ which contains the tuples $\{(0,x), (1,x), (2,y), (3,z), (7,g)\}$ over the 
+attributes $a$ and $b$, as shown in Table~\ref{tab:r}. 
+A possible horizontal fragmentation is $F_1=\{(0,x), (1,x)\}$, $F_2=\{(2,y), (3,z)\}$ and $F_3=\{(7,g)\}$. 
+This fragmentation is illustrated by Table~\ref{tab:r_frag} and could be obtained from the three selections $F_1=\sigma_{a \leq 1}(R)$,
+$F_2=\sigma_{a \geq 2~\land~a \leq 5}(R)$ and $F_3=\sigma_{a \geq 6}(R)$. Here, each row of the table, i.e. each tuple $\mu \in R$, is assigned to exactly one
+of the fragments $F_i,~i\in\{1,2,3\}$, so there is no duplication of any tuple and the fragments are pairwise disjoint, but each tuple $\mu \in R$ is somewhere
+contained in one of the fragments. 
+Hence, the union $F_1 \cup F_2 \cup F_3$ of all the fragments yields the original tuple set, which means that the partitioned relation $R$ can be reconstructed
+from the fragments, because each of the original tuples is found in (at least) one fragment. Due to the fact that this primary horizontal fragmentation is
+complete and disjoint and that the fragmentation can be reverted by reconstruction of the original relation, the three fragmentation correctness rules
+\cite[p.~103]{Ozsu1991} are fulfilled.
+
 \begin{table}[h]
     \hspace*{\fill}
     \begin{tabular}{c|c}
         $a$ & $b$\\
         \hline
         0 & x \\
-        3 & z
-    \end{tabular}
-    \hfill
-    \begin{tabular}{c|c}
-        $a$ & $b$\\
-        \hline
-        1 & x \\
-        7 & g
+        1 & x
     \end{tabular}
     \hfill
     \begin{tabular}{c|c}
         $a$ & $b$\\
         \hline
         2 & y \\
+        3 & z
+    \end{tabular}
+    \hfill
+    \begin{tabular}{c|c}
+        $a$ & $b$\\
+        \hline
+        7 & g \\
          & 
     \end{tabular}
     \hspace*{\fill}
     \caption{Horizontal fragments $F_1$, $F_2$ and $F_3$ (from left to right)}
     \label{tab:r_frag}
 \end{table}
+
+According to this primary horizontal fragmentation of $R$, a derived horizontal fragmentation of $S=\{(x, 0.5), (y, 0.3), (g, 9.9)\}$ (Table~\ref{tab:s}) over 
+the attributes $b$ and $c$ is obtained by computing the previously stated definition using a semi-join, fragment $G_i = S \ltimes F_i$ for $i\in\{1,2,3\}$.
+Based on the matches of tuples from $S$ with tuples in the fragments $F_i$, the derived fragments are $G_1=\{(x,0.5)\}$, $G_2=\{(y, 0.3)\}$ and 
+$G_3=\{(g, 9.9)\}$ (Table~\ref{tab:s}).
+
+
+\begin{table}[h]
+    \hspace*{\fill}
+    \begin{center}
+    \begin{tabular}{c|c}
+        $b$ & $c$\\
+        \hline
+        x & 0.5 \\
+        y & 0.3 \\
+        g & 9.9
+    \end{tabular}
+    \hspace{20pt}
+    \begin{tabular}{c|c}
+        $b$ & $c$\\
+        \hline
+        x & 0.5
+    \end{tabular}
+    \hspace{5pt}
+    \begin{tabular}{c|c}
+        $b$ & $c$\\
+        \hline
+        y & 0.3
+    \end{tabular}
+    \hspace{5pt}
+    \begin{tabular}{c|c}
+        $b$ & $c$\\
+        \hline
+        g & 9.9
+    \end{tabular}
+    \caption{Relation $S$ with attributes $b$ and $c$ (leftmost), derived fragments $G_1$, $G_2$ and $G_3$}
+    \label{tab:s}
+    \end{center}
+\end{table}
+
+For the demonstration of an exemplary vertical fragmentation, consider the view $T$ calculated as the left outer join of the two relations $R$ and $S$, 
+$T~=~R~{\tiny \textifsym{d|><|}}~S$ over the attribute set $\{a,b,c\}$. 
+This left outer join yields the tuple set $\{(0,x,0.5), (1,x,0.5), (2,y,0.3), (3,z,null), (7,g,9.9))\}$ (Table~\ref{tab:join_vert_frag}). The so obtained
+relation (or view) can be partitioned vertically based on the two attribute subsets $\{a,b\}$ and $\{b,c\}$ that produce two vertical fragments $H_1$ and 
+$H_2$, which are also depicted in Table~\ref{tab:join_vert_frag} next to the original relation. Here, each tuple of one of the vertical fragments contains the
+attribute a, which is, in this case, a unique identifier for the original tuple from $T$.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{c|c|c}
+        $a$ & $b$ & $c$ \\
+        \hline
+        0 & x & 0.5 \\
+        1 & x & 0.5 \\
+        2 & y & 0.3 \\
+        3 & z & null \\
+        7 & g & 9.9 \\
+    \end{tabular}
+    \hspace{20pt}
+    \begin{tabular}{c|c}
+        $a$ & $b$ \\
+        \hline
+        0 & x \\
+        1 & x \\
+        2 & y \\
+        3 & z \\
+        7 & g \\
+    \end{tabular}
+    \hspace{5pt}
+    \begin{tabular}{c|c}
+        $a$ & $c$ \\
+        \hline
+        0 & 0.5 \\
+        1 & 0.5 \\
+        2 & 0.3 \\
+        3 & null \\
+        7 & 9.9 \\
+    \end{tabular}
+    \caption{$R~{\tiny \textifsym{d|><|}}~S$, vertical fragments $H_1$ and $H_2$}
+    \label{tab:join_vert_frag}
+\end{table}
+
 \end{exmp}
- 
+
+
+
+\subsubsection{Replication}
+\label{sec:theo_ddb_repl}
+\todo[inline]{Maybe replication (short because not relevant for impl.)}
