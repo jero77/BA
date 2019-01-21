@@ -4,6 +4,10 @@
 \section{Theoretical Background}
 \label{sec:theo}
 
+In the following section there will be given an introduction to the distributed database terminology. The further sections give an overview of the 
+architecture, fragmentation and replication that take place in such distributed systems as well as some advantages and disadvantages.
+\todo[inline]{Query processing or own subsection?}
+
 \subsection{Distributed Databases}
 \label{sec:theo_ddb}
 
@@ -18,12 +22,40 @@ This results, from the point of view of a user, in a logically single database, 
 Furthermore, users can benefit from a physical distribution of the data depending on an architectural design because they can communicate with the 
 geographically closest site where one of the databases resides reducing the network communication delay, and concurrent access of the DDB can be handled in a 
 distributed way, too, exploiting the fact that more servers imply more computing power for the \emph{distributed database system}~(DDBS). Additionally, a DDBS 
-can provide an improved availability compared to a non-distributed database when the data is replicated. This implies that the data can be reached from 
+can provide an improved availability compared to a non-distributed database, e.g. when the data is replicated. This implies that the data can be reached from 
 multiple sites even if there is a failure of one of the databases or of parts of the communication network. In this way, users will have a chance to be able
 to still retrieve the data regardless of parts of the database being not available.
 
-A DDBMS can be \emph{homogenous} or \emph{heterogenous} where in a homogenous DDBMS all participating sites share the same DBMS locally and in a heterogenous
-DDBMS the sites may have a different DBMS with probably different data models. \todo[inline]{... ?!?!}
+
+\subsubsection{Architecture}
+\label{sec:theo_ddb_arch}
+\defcitealias{Ignite}{Apache Ignite\texttrademark{}}
+An architecture of a distributed database mangement system could look like depicted in Figure~\ref{fig:ddbs_arch}. Four different locations interconnected via
+a communication network are each holding a database which is connected to a DBMS managing the underlying database. The locations can be local, e.g. four 
+computers or servers in one room, or global, e.g. four servers at different cities where the company holding this DDBS resides. The type of a DDBMS can be
+classified as \emph{homogenous} or \emph{heterogenous} where in a homogenous DDBS all participating sites share the same DBMS locally and in a heterogenous
+DDBS the sites may have a different DBMS with probably different data models \cite[p.~607]{Ramakrish2000}. For example, if in Figure~\ref{fig:ddbs_arch} all
+DBMSs (DBMS 1 -- DBMS 4) are the same DBMS, e.g. all are \citetalias{Ignite} nodes, then the distributed database system would be homogenous (cf. 
+\cite[Fig.~2]{Jadhav2017}). If at least one of the locations is in control of a second DBMS, the DDBS would be homogenous, which is also called a 
+\emph{multidatabase system}. However, the heterogenity of a DDBS introduces "a significant cost in terms of performance, software complexity, and
+administration difficulty" \cite[p.~608, l.13--14]{Ramakrish2000} regarding the management of the distributed data.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth,keepaspectratio=true]{img/DDBMS_Architecture.pdf}
+    \caption{Architecture of a distributed database system from \cite[Fig.~1]{Kumar2013}}
+    \label{fig:ddbs_arch}
+\end{figure}
+
+In \citet[p.~608f.]{Ramakrish2000} the three architecture approaches, \emph{Client-Server}, \emph{Collaborating Server} and \emph{Middleware}, are 
+discussed. The first, really popular architectural model is characterized by a distinction between client and server processes resulting in a separation of
+functionality, i.e. servers are responsible for data storage and management whereas clients provide user interfaces to query data from a server. In a
+Colloborating Server system, in contrast, all servers are able to decompose received queries that concern data from multiple servers to subqueries. The
+subqueries are then executed accordingly at the servers on their locally stored data and a result is computed from all the servers' answers. This is also
+described in Section~\ref{...}. \todo[inline]{ref}
+In Middleware systems the task of query management and decomposition is handled by a single server and all other servers only need to perform queries against
+their local data.
+
 
 
 \subsubsection{Fragmentation}
@@ -32,7 +64,7 @@ The relations of distributed databases can be partitioned into fragments of the 
 more of the databases that belong to the DDBS. The amount of data per database can be reduced by doing so. This \emph{fragmentation} can be achieved by using
 a certain fragmentation strategy and the resulting fragments, which contain parts of the whole data set, can then be dispersed across the network by mapping
 the fragments to databases that possibly reside at different physical locations which are not necessarily geographically distant. The in the following 
-introduced fragmentation alternatives will be elucidated by ways of small "toy" examples in Example \ref{sec:theo_ddb_exmp}.
+introduced fragmentation alternatives will be elucidated by ways of small "toy" examples in Example~\ref{sec:theo_ddb_exmp}.
 
 One strategy to obtain a fragmentation of the data is the so-called \emph{horizontal fragmentation} \cite[p.~105]{Ozsu1991} that divides a relation in a 
 row-wise manner into smaller portions with only some of tuples that were contained in the original relation, i.e. a relation $R$ can be divided into fragments
@@ -48,7 +80,8 @@ fragmentation, and, to prevent tuples in $S$ from getting lost during the semi-j
 matching tuples in $R$ in order to let the tuples from $S$ "survive" the semi-join. An integrity constraint in form of a foreign key reference of the relation
 $S$ to the relation $R$ can be used to enforce this condition for the sake of completeness of the derived fragmentation. Though with the definition of the 
 derived horizontal fragmentation on a semi-join, inherently replication of tuples of $S$ in the derived fragments may occur if tuples in $S$ match multiple
-tuples that belong to different fragments of $R$ \cite[p.~121]{Ozsu1991}. This causes the fragments $G_i$ of $S$ not to be disjoint in general.
+tuples that belong to different fragments of $R$ \cite[p.~121]{Ozsu1991}. This causes the fragments $G_i$ of $S$ not to be disjoint in general which is equal
+to a partial replication as described in Section~\ref{sec:theo_ddb_repl}.
 
 
 On the other hand, a \emph{vertical fragmentation} \cite[p.~122]{Ozsu1991} is a columnwise division of a relation $R$, such that each of the resulting
@@ -204,4 +237,41 @@ attribute a, which is, in this case, a unique identifier for the original tuple 
 
 \subsubsection{Replication}
 \label{sec:theo_ddb_repl}
-\todo[inline]{Maybe replication (short because not relevant for impl.)}
+The \emph{data replication} as discussed in \citet{Wiese2014} is not relevant for the implementation part in this work, and so this topic will only be
+mentioned here and the investigations on it will be kept short as it still is an important part of distributed databases. Replication is a design approach
+for a DDBS that is used for storing the data together with copies of the data. The data is duplicated and can be distributed multiple times to even different
+sites such that a the same data is present on different servers. In contrast to this, the data can also be \emph{partitioned} where none of the data fragments,
+which are obtained from a fragmentation as analyzed in Section~\ref{sec:theo_ddb_frag}, is duplicated. There exist two alternative basic strategies for a 
+replication design \cite[p.~12]{Ozsu1991}. One of them is the \emph{full replication} where the whole database is stored at each site, i.e. the data is
+distributed to each server and so each server has exactly the same data set as all other servers. The other one is the \emph{partial replication} where each
+of the data partitions can distributed to more than one server. A partial replication for example could be used in case of having each partition at a server 
+that is primarily responsible for that partition (primary partition) and at some other servers where the partitions are held as backup copies for the primary
+partition.
+\todo[inline]{maybe refer to example ignite (picture)}
+
+
+\subsubsection{Advantages and Disadvantages of DDBMS}
+Using distributed databases for storing and managing information can be advantageous. As already mentioned, the distribution of the data across multiple 
+servers can provide features like higher availability of the data, which can come from failure tolerance, as well as more efficient interaction with the DDBS. 
+Several advantages of distributed database systems are (cf. \citep{Jadhav2017} and \cite[p.~8ff.]{Ozsu1991}):
+
+\begin{enumerate}
+    \item Local Autonomy: Data that is frequently accessed from a certain user group can be placed at the site which is the closest one to the user group
+            allowing for local control and indepent access.
+    \item Improved Performance: Parallelizing queries and resource usage can lead to higher efficiency.
+    \item Improved Reliability/Availability: Distributed data has a higher resistance to inaccessibility in case of a failure because it may be retrieved from
+            another site and work on at least the part of the data which is not affected by a failure can be guaranteed. 
+    \item Expandability: The DDBS can be simply expanded by e.g. additional servers that improve the load balancing abilities of the system
+    \item Shareability: Distributed databases inherently offer the possibility to share the stored data
+\end{enumerate}
+
+On the contrary, one big disadvantage of a DDBS is that installation, control and maintenance of such a system are really hard because of the way
+more complex appearance of a DDBS compared to the centralized database concept \citep{Jadhav2017}. The design of a DDBS is also crucial as it can cause the 
+system to be less efficient if the design is not well-suited to the application's requirements what can lead to bad resource usage and high communication 
+costs in the interconnecting network. More issues are security of system and data, which demand some extra effort in terms of protection because the sites and 
+data fragments are not centralized but remote making them more vulnerable if not secured accordingly, and economics where more infrastructure and hardware for 
+a distribution to multiple sites come along with higher costs \cite{Kumar2013}.
+
+
+
+\todo[inline]{Distributed query processing --> Öszu; Ramakrishnan p.614}

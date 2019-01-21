@@ -45,7 +45,7 @@
 %\includegraphics[height=xxmm]{unilogo.pdf}
 \raisebox{7mm}{Göttingen}\par
 \vfill
-Abgabedatum: 01.04.19
+Abgabedatum: 08.04.19
 \end{center}
 
 
@@ -124,7 +124,26 @@ werden randomisiert erzeugt und gespeichert, wobei die Krankheiten auf dem in de
 zweier Terme, die Erkrankungen beschreiben, wird ein Tool des \citetalias{UMLS::Sim} Moduls (siehe~\url{http://umls-similarity.sourceforge.net/}) herangezogen.
 Das Modul unterstützt dabei die Ontologien, wie bspw. MeSH, des \citetalias{UMLS}.
 Die Arbeit basiert maßgeblich auf dem Artikel \citet{Wiese2014}, in dem die theoretischen Grundlagen sowie praktische Aspekte zu dem Thema untersucht werden.
+Die Daten werden anhand eines Clusters bezüglich der Ähnlichkeit zwischen den Termen für Krankheiten über die Datenbank verteilt und partitioniert bzw. 
+fragmentiert abgespeichert, um zum Einen die Effizienz der Fragmentierungsstrategie in Form des Laufzeitverhaltens zu analysieren und um zum Anderen die 
+Skalierbarkeit der Fragmentierung zu untersuchen. Weiterhin wird auch die durch die Definition eines Ähnlichkeitsmaßes ermöglichte flexible Anfragebeantwortung
+des Systems auf den verteilten Daten bei Anfragen mit Selektionen auf den Krankheiten getestet.
 
+
+\section{Fragestellungen}
+Basierend auf der beschriebenen Implementation des verteilten Datenbanksystems sollen folgende Kernfragestellungen im Zuge der Ausarbeitung untersucht werden:
+\begin{enumerate}
+    \item Verbessert sich die Laufzeit bei Anfragen an die verteilte Datenbank durch die Benutzung einer Clustering-basierten Fragmentierung der Daten
+        gegenüber anderen Fragmentierungen der Daten?
+    \item Inwiefern beeinflusst die Größe der Datenmenge die Effizienz der Anfragebeantwortung? Skaliert die Effizienz gegenüber anderen Methoden sogar mit der
+        Größe?
+    \item Wie effizient ist die flexible Anfragebeantwortung für die intelligente Fragmentierung?
+\end{enumerate}
+
+Optional werden noch weitere Fragestellungen im Hinblick auf die Effizienz alternativer Implementierungen des Datenbanksystems, die beispielsweise durch
+Modifikation der ersten Implementation oder Erweiterungen der implementierten Techniken entstehen, betrachtet. Auch eine Erweiterung der flexiblen
+Anfragebeantwortung durch zusätzliche Strategien oder während der Implementierung auftretende technische Herausforderungen und Möglichkeiten könnten weitere
+Quellen für mögliche Fragestellung sein.
 
 \newpage
 \bibliography{literature}
