@@ -12,6 +12,8 @@
 \usepackage{moreverb}
 \usepackage{textcomp}
 \usepackage{url}
+\usepackage{setspace}
+\usepackage[a4paper, left=3.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}    % margins
     % natbib
 \usepackage[square,numbers]{natbib}
 \usepackage[nottoc]{tocbibind}
@@ -25,7 +27,6 @@
     % joins, etc.
 \usepackage{amssymb}
 \usepackage{ifsym}
-
     % todo
 \usepackage{todonotes}
 
@@ -36,28 +37,47 @@
 \setlength{\parindent}{0mm}
 \setlength{\parskip}{1mm}
 
+% coverpage
+\usepackage{tabularx}
 
+% frames
+\usepackage{mdframed}
+
+% 1.5 spacing
+\onehalfspacing
+
+
+% Submission date
+\newcommand{\mysubmissiondate}{01.04.2019}
 
 
 % Document
 \begin{document}
 
 % Title page & table of contents & list of tables/figures
-\input{jsba_tp}
+%\input{jsba_tp}
+\input{jsba_cove.tex}
 \newpage
 \tableofcontents
+\thispagestyle{empty}
 \newpage
 \listoffigures
 \listoftables
 
 
 % Introduction
+\pagenumbering{arabic}
+\setcounter{page}{1}
 \newpage
 \input{jsba_intro}
 
 % Theoretical Background: Distributed Databases, ...
 \newpage
 \input{jsba_theo}
+
+% Method
+\newpage
+\input{jsba_meth.tex}
 
 % Implementation
 \newpage
@@ -67,6 +87,10 @@
 \newpage
 \input{jsba_res}
 
+% Discussion
+\newpage
+\input{jsba_disc.tex}
+
 % Appendix
 \newpage
 \appendix
@@ -74,6 +98,7 @@
 
 % Bibliography
 \newpage
+\singlespacing
 \bibliography{literature}
 
 \end{document}

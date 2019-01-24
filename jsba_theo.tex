@@ -52,7 +52,7 @@ discussed. The first, really popular architectural model is characterized by a d
 functionality, i.e. servers are responsible for data storage and management whereas clients provide user interfaces to query data from a server. In a
 Colloborating Server system, in contrast, all servers are able to decompose received queries that concern data from multiple servers to subqueries. The
 subqueries are then executed accordingly at the servers on their locally stored data and a result is computed from all the servers' answers. This is also
-described in Section~\ref{...}. \todo[inline]{ref}
+described in Section~\ref{sec:theo_dqp}.
 In Middleware systems the task of query management and decomposition is handled by a single server and all other servers only need to perform queries against
 their local data.
 
@@ -273,5 +273,86 @@ data fragments are not centralized but remote making them more vulnerable if not
 a distribution to multiple sites come along with higher costs \cite{Kumar2013}.
 
 
+\subsection{Distributed Query Processing}
+\label{sec:theo_dqp}
+\todo[inline]{Distributed query processing (maybe subsubsection--> Öszu; Ramakrishnan p.614}
 
-\todo[inline]{Distributed query processing --> Öszu; Ramakrishnan p.614}
+A DDBS has to be able to answer a query in the same manner as a non-distributed relational database. The result of a query is a set of tuples fulfilling the
+query. To obtain such a set the database system uses relational algebra operations for its computation, e.g. a join of two tables or the selection on an
+attribute with a certain condition. When now considering distributed data, which could be fragmented and replicated, the performance of computing answers to
+the query can be a big issue due to increased network communication inferred by data transfer between the database sites \cite[p.~173]{Ozsu1991}. This can even
+occur for simple queries that only scan a certain relation and project to some subset of the attributes.
+
+
+\begin{exmp}
+Again, examine a similar situation as in Example~\ref{sec:theo_ddb_exmp} regarding the data from Table~\ref{tab:r} and Table~\ref{tab:s}. For example, 
+assume the both relations $R$ and $S$ are not fragmented, not replicated and distributed in such a way that one server holds all the tuples of relation 
+$R$ and another server holds all the tuples of relation $S$ as shown in Figure~\ref{fig:dqp_rs_simple}.
+
+
+\begin{figure}[h]
+\framebox[\textwidth]{
+    Servers
+    \hspace*{1cm}
+    \framebox[1.1\width]{
+        $S_1$
+        \hspace{0.5cm}
+        \begin{tabular}{c|c} 
+             $a$ & $b$\\
+             \hline
+             0 & x \\
+             1 & x \\
+             2 & y \\
+             3 & z \\
+             7 & g \\
+        \end{tabular}
+        
+        
+    }
+    
+    \hspace*{1cm}
+    
+    \framebox[1.1\width]{
+        $S_2$
+        \hspace{0.5cm}
+        \begin{tabular}{c|c}
+            $b$ & $c$\\
+            \hline
+            x & 0.5 \\
+            y & 0.3 \\
+            g & 9.9
+        \end{tabular}
+    }
+    
+}
+\caption{Distribution of relations $R$ (Table~\ref{tab:r}) and $S$ (Table~\ref{tab:s}) to two servers}
+\label{fig:dqp_rs_simple}
+\end{figure}
+
+
+Then, a rather simple query without any joins and only one relation concerned like
+\begin{verbatim}
+    SELECT R.a FROM R WHERE R.b = 'x'
+\end{verbatim}
+can be evaluated - in this case easily - by the DDBMS by sending the query only to server $S_1$ in order to correctly fetch the tuples for the result from
+there. The knowledge about the distribution of relation $R$ and $S$ enables the DDBMS to decompose and optimize the query. But upon a join, querying is not
+that simple anymore due to the fact that now tuples have to be fetched from multiple servers and combined. For example, have a look at the query
+\begin{verbatim}
+    SELECT R.a, R.b, S.c FROM R, S WHERE R.b = S.b AND S.c < 1
+\end{verbatim}
+which could be answered, e.g. by sending all the tuples in $S$ from $S_2$ to $S_1$ which would then be joined and selected locally and the result would be
+returned. Another possible computation could be done by decomposing the query and sending the subquery
+\begin{verbatim}
+    SELECT S.b FROM S WHERE S.c < 1
+\end{verbatim}
+to the server $S_2$ and the subquery
+\begin{verbatim}
+    SELECT * FROM R
+\end{verbatim}
+to the server $S_1$. 
+The results of both queries could then be joined locally at the client-side (cf. Client-Server architecture from Section~\ref{sec:theo_ddb_arch}) or at a 
+third server which is responsible for the query processing (cf. Middleware architecture from Section~\ref{sec:theo_ddb_arch}).
+
+
+
+\end{exmp}
