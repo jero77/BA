@@ -1,0 +1,111 @@
+%!TEX root = jsba_main.tex
+% Introduction
+
+\section{Introduction}
+\label{sec:intro}
+
+\emph{Distributed databases} (DDBs) gained significantly more importance over the past years as they provide physically distributed storage \citep{Tan2009}
+for the ever-growing amount of data in our world. Especially, in fields where the amount of data to be hosted in a database is challenging, e.g. multimedia
+and textual data occurring in a social network with millions of people or medical so-called "big data" retrieved and collected from different sources to be
+used in healthcare for e.g. predictions or research as mentioned in \citet{Lee2017}, a fragmentation and replication of this big data to multiple servers 
+in a cloud storage infrastructure instead of one single server can pay off. The data fragmentation overcomes the limitation of storage capacity of a single
+storage instance as the total amount of data can be split into smaller parts, so-called fragments, and fragmentation can increase the performance of the 
+query processing. 
+Furthermore, the replication of the data fragments inside the network yields a tolerance to failures by compensating data loss with recovery, e.g. in 
+case of a malfunction or total failure of a single server, to guarantee the desired availability and reliability of the data accessed by the users of the
+distributed database system (DDBS).
+
+
+In the case of a relational data model underlying the database, a fragmentation of the data can be a \emph{horizontal} or \emph{vertical fragmentation} 
+of the relations (tables) of the database \citep[p.~104f.]{Ozsu1991}. A horizontal fragmentation means a tuple-wise assignment to fragments, i.e. fragments
+contain subsets of rows of the non-fragmented table, whereas a vertical fragmentation "slices" the relation by its attributes, i.e. fragments contain
+projections to the columns. 
+The here analyzed and implemented approach uses a clustering heuristic on one chosen attribute as described in \citet{Wiese2014} to obtain a primary
+horizontal fragmentation for a relation. The clustering procedure depends on a similarity calculation of the values of the chosen relaxation attribute 
+resulting in a clustering of the column's values, such that values with a high similarity belong to the same cluster. Hence, a fragmentation of relations
+that have common attributes with this horizontally fragmented relation, i.e. attributes that will be used in queries to join these two relations, can be 
+\emph{derived}~\citep[p.~116f.]{Ozsu1991}, such that the tuples which are about to be joined reside on the same server allowing for better performance in 
+queries compared to query processing with a distributed join which has to be applied if the data is not residing at the same
+site~\citep{Sattler2009DistJoin}.
+Thus, this derived horizontal fragmentation improves data locality~\citep{Wiese2014} because the probably high delay of data transmission over the 
+network, which is needed in case of a distributed join, will be avoided to the joy of any database user.
+
+
+\defcitealias{MeSH}{MeSH\textcopyright}
+The example of a \emph{medical information system}, which is used as an application of such a distributed database system with a clustering-based 
+fragmentation, is a modified version of the example defined in \citet{Wiese2014}. Patient's personal information as well as the diseases they suffer from
+are contained in a distributed database. For example, a hospital could host this database to provide access to the patient data to doctors and nurses that
+need to work with this data from different computers or other technical devices located in the hospital, but it is also possible that researchers could
+make use of that patient data, e.g. when investigating the co-occurrence of several diseases.
+The clustering procedure is applied to this disease information of patients, whereas the disease terms are conform to the vocabulary provided by the 
+\emph{Medical Subject Headings} taxonomy (see \citetalias{MeSH}) of the U.S. National Library of Medicine, which is the largest biomedical library in 
+the world. The \emph{Unified Medical Language System} (UMLS), which was also developed and maintained by the U.S. National Library of Medicine, brings
+together several taxonomies, like the MeSH taxonomy, in order to integrate and link their biomedical and health-related vocabularies allowing applications
+to interchange information based on different vocabularies.
+A similarity measure defined between the disease terms from the MeSH database yields the needed similarity calculation for the clustering-based 
+fragmentation. In this way, tuples holding information about patients suffering from similar illnesses are stored on the same site and can easily be
+queried together in an intelligent, non-distributed fashion.
+
+
+Upon query failure, i.e. when the database cannot give an exact answer to a query formulated by a user, an empty result is returned. Assuming the query 
+was formulated correctly, the blank result indicates to the user that the information he or she was looking for is not present in the current database
+state due to the lack of any exact answers, and so this result is non-informative for the user in the general case. \emph{Flexible query answering}, on 
+the contrary, can overcome this lack of information when the database system uses techniques like \emph{query generalization} to provide the user a 
+non-empty result, which on the one hand does not match the query exactly but on the other hand contains information instead that may be relevant to the
+user.
+
+\begin{exmp}
+\label{sec:intro_exmp}
+Consider a sample database about companies and their employees. The database contains a relation 'Employee' with information about a person, e.g. the
+person's name, age, address, salary, social security number and a reference to the company the person works for. The companies are stored in the
+relation 'Company' that has the attributes name, headquarter, industrial sector and maybe some others. An exemplary SQL query that joins the two relations
+to find out the name of those companies in a certain business where the average salary of all employees is higher than 100.000~\$ could be
+\begin{verbatim}
+    SELECT Company.name 
+    FROM Employee, Company 
+    WHERE Employee.Company = Company.Name 
+        AND Company.Industry = 'Farming'
+    GROUP BY Company.Name 
+    HAVING avg(salary) > 100000.
+\end{verbatim}
+However, as the database maybe does not know a company from that agricultural sub-sector having an average salary like that, it could return an empty 
+answer to the query that is not satisfying for the user. Instead of returning and empty answer set, the database could - of course only if it is able 
+to do so - try to answer the given query in a flexible manner, e.g. by changing the selection condition in the \verb!WHERE! clause
+\begin{verbatim}
+    Company.Industry = 'Farming'
+\end{verbatim}
+to a more \emph{general} one that could provide some information not matching the query exactly but still having some informational content. One way to 
+achieve this, would be to omit this selection condition completely from the \verb!WHERE! clause resulting in a possibly non-empty answer that would 
+contain names of companies from all industrial sectors that suffice the stated average salary condition. A more relevant answer for the user could be
+obtained by first generalizing the sub-sector farming to the broader sector of agriculture that includes for example fishing companies as well as the
+forestry sector. Thereby, not all industrial sectors, which include companies that might have nothing in common with the intended agricultural companies,
+are considered but only those that are of the user's interest. The higher relevance of the informational content from an answer of the database to an in 
+this way rewritten query compared to the first approach is achieved by allowing \emph{similar} answers in case of query failure.
+\end{exmp}
+
+As shown previously in Example~\ref{sec:intro_exmp}, the \emph{similarity-based, flexible query answering} \citep{Wiese2014} enables the database in case 
+of a failing query, which is possibly not satisfying for the user, to search for answers in closely related sectors regarding the chosen attribute, 
+the \emph{relaxation attribute} \citep{Wiese2014}, by taking those values of the domain of the relaxation attribute into account that actually have some 
+relatedness to the initally stated query which suffices to satisfy the user's needs. In contrast to this, an extension of the query sent to the
+database without any modified selection condition on the relaxation attribute might have answers that have not necessarily any relatedness to the initial
+query, thus, they are not really informative for the user unless he filters out those tuples matching his question most.
+
+
+\defcitealias{UMLS::Sim}{UMLS::Similarity}
+The "HIGHmed" project \citep{Haarbrandt2018} is an approach to develop an open infrastructure for information exchange and data management and integration
+in order to facilitate and improve research and health care as a cooperation of three German university hospitals and the German Cancer Research Center
+(DKFZ) as the core partners together with other partners, e.g. from research institutions or from the industry (cf. \cite[Table~2]{Haarbrandt2018}.
+Indeed, the similarity plays a big role today in the health care section as indicated in the oncology use case in the article to the project.
+For this, the developed platform will incorporate a "virtual oncology center" (VOC) \citep{Haarbrandt2018} with the goal to improve clinical research and 
+decision making regarding cancer diseases by a functional infrastructure. This part of the platform aims to utilize shared data about courses of
+treatment of patients and historical data from studies, which are provided from different participating sources, with applications built on this platform.
+By doing so, the applications support the identification of similar cases for selected patients in order to help to decide for an appropriatly tailored
+treatment and to be able to draw conclusions regarding the disease progression. The used similarity measures enabling the search for similar patients,
+whose pathologies and treatments lead to inference of useful knowledge for the decision making, depend on machine learning and ontologies. The latter ones
+also form the core part for the tool of the \citetalias{UMLS::Sim} module, developed by \cite{McInnes2009}, which will be used later in the underlying
+implementation of the distributed database system to calculate similarities between disease terms according to the Medical Subject Headings taxonomy that 
+are required for the clustering-based fragmentation as well as the similarity-based query answering.
+
+
+
+\todo[inline]{Summarize content of the following sections \dots}

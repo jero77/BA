@@ -1,23 +1,108 @@
 %!TEX root = jsba_main.tex
+% This is the main file of my bachelorthesis
 
-% Das ist die Hauptdatei meiner Bachelorarbeit
+
 \documentclass[a4paper, 11pt]{article}
+
+% Packages
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
-\usepackage[ngerman]{babel}
+\usepackage[english]{babel}
 \usepackage{moreverb}
+\usepackage{textcomp}
+\usepackage{url}
+\usepackage{setspace}
+\usepackage[a4paper, left=3.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}    % margins
+    % natbib
+\usepackage[square,numbers]{natbib}
+\usepackage[nottoc]{tocbibind}
+\bibliographystyle{unsrtnat}
+\setcitestyle{authoryear}
+    % math
+\usepackage{mathtools}
+\usepackage{amsthm}
+\theoremstyle{definition}
+\newtheorem{exmp}{Example}[section]     % for examples
+    % joins, etc.
+\usepackage{amssymb}
+\usepackage{ifsym}
+    % todo
+\usepackage{todonotes}
+
+    % caption
+\usepackage{caption}
+
+% Distances, etc.
 \setlength{\parindent}{0mm}
 \setlength{\parskip}{1mm}
 
+% coverpage
+\usepackage{tabularx}
+
+% frames
+\usepackage{mdframed}
+
+% 1.5 spacing
+\onehalfspacing
+
+
+% Submission date
+\newcommand{\mysubmissiondate}{01.04.2019}
+
+
+% Document
 \begin{document}
-\input{jsba_ts}     % Titelseite
+
+% Title page & statement of authorship
+%\input{jsba_tp}
+\input{jsba_cove.tex}
+\newpage
+\input{jsba_stmt.tex}
+
+% Table of contents & list of tables/figures
 \newpage
 \tableofcontents
+\thispagestyle{empty}
 \newpage
-\input{jsba_einl}   % Einleitung
+\listoffigures
+\listoftables
+
+
+% Introduction
+\pagenumbering{arabic}
+\setcounter{page}{1}
 \newpage
-% ...
+\input{jsba_intro}
+
+% Theoretical Background: Distributed Databases, Distributed Query Processing
+\newpage
+\input{jsba_theo}
+
+% Methods
+\newpage
+\input{jsba_meth.tex}
+
+% Implementation
+\newpage
+\input{jsba_impl}
+
+% Results
+\newpage
+\input{jsba_res}
+
+% Discussion
+\newpage
+\input{jsba_disc.tex}
+
+% Appendix
+\newpage
 \appendix
-\input{jsba_anh}
+\input{jsba_app}
+
+% Bibliography
+\newpage
+\singlespacing
+\bibliography{literature}
+
 \end{document}
