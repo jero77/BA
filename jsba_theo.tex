@@ -4,41 +4,42 @@
 \section{Theoretical Background}
 \label{sec:theo}
 
-In the following section there will be given an introduction to the distributed database terminology. The further sections give an overview of the 
-architecture, fragmentation and replication that take place in such distributed systems as well as some advantages and disadvantages.
-\todo[inline]{Query processing or own subsection?}
+In the following section there first will be given an introduction to the distributed database terminology and the further subsections give an overview of
+the architecture, fragmentation and replication that take place in such distributed systems as well as some advantages and disadvantages. The second 
+section outlines the distributed query processing, which is required when querying for physically distributed data, and gives some insights in how queries
+can be decomposed and rewritten to match the distribution of the data in an optimized way.
 
 \subsection{Distributed Databases}
 \label{sec:theo_ddb}
 
 \subsubsection{Terminology}
 \label{sec:theo_ddb_term}
-A \emph{distributed database}~(DDB) can be defined as multiple, logically interconnected databases spread across a computer network~\cite[p.~4]{Ozsu1991}, such
-that the physical presence of the data may be dispersed spatially instead of having one single database hoarding all the data at a certain location physically.
-On top of this DDB, there is often a so-called \emph{distributed database management system}~(DDBMS) which manages the underlying databases and the access to 
-the data, and the users are enabled to work with the data of the DDB without noticing the physically distribution, i.e. in a transparent 
+A \emph{distributed database}~(DDB) can be defined as multiple, logically interconnected databases spread across a computer network~\cite[p.~4]{Ozsu1991},
+such that the physical presence of the data may be dispersed spatially instead of having one single database hoarding all the data at a certain location
+physically. On top of this DDB, there is often a so-called \emph{distributed database management system}~(DDBMS) which manages the underlying databases 
+and the access to the data, and the users are enabled to work with the data of the DDB without noticing the physically distribution, i.e. in a transparent 
 manner~\cite[p.~4f.]{Ozsu1991}.
 This results, from the point of view of a user, in a logically single database, which can be queried in the same way as a non-distributed database. 
 Furthermore, users can benefit from a physical distribution of the data depending on an architectural design because they can communicate with the 
-geographically closest site where one of the databases resides reducing the network communication delay, and concurrent access of the DDB can be handled in a 
-distributed way, too, exploiting the fact that more servers imply more computing power for the \emph{distributed database system}~(DDBS). Additionally, a DDBS 
-can provide an improved availability compared to a non-distributed database, e.g. when the data is replicated. This implies that the data can be reached from 
-multiple sites even if there is a failure of one of the databases or of parts of the communication network. In this way, users will have a chance to be able
-to still retrieve the data regardless of parts of the database being not available.
+geographically closest site where one of the databases resides reducing the network communication delay, and concurrent access of the DDB can be handled 
+in a distributed way, too, exploiting the fact that more servers imply more computing power for the \emph{distributed database system}~(DDBS).
+Additionally, a DDBS can provide an improved availability compared to a non-distributed database, e.g. when the data is replicated. This implies that the
+data can be reached from multiple sites even if there is a failure of one of the databases or of parts of the communication network. In this way, users
+will have a chance to be able to still retrieve the data regardless of parts of the database being not available.
 
 
 \subsubsection{Architecture}
 \label{sec:theo_ddb_arch}
 \defcitealias{Ignite}{Apache Ignite\texttrademark{}}
-An architecture of a distributed database mangement system could look like depicted in Figure~\ref{fig:ddbs_arch}. Four different locations interconnected via
-a communication network are each holding a database which is connected to a DBMS managing the underlying database. The locations can be local, e.g. four 
-computers or servers in one room, or global, e.g. four servers at different cities where the company holding this DDBS resides. The type of a DDBMS can be
-classified as \emph{homogenous} or \emph{heterogenous} where in a homogenous DDBS all participating sites share the same DBMS locally and in a heterogenous
-DDBS the sites may have a different DBMS with probably different data models \cite[p.~607]{Ramakrish2000}. For example, if in Figure~\ref{fig:ddbs_arch} all
-DBMSs (DBMS 1 -- DBMS 4) are the same DBMS, e.g. all are \citetalias{Ignite} nodes, then the distributed database system would be homogenous (cf. 
-\cite[Fig.~2]{Jadhav2017}). If at least one of the locations is in control of a second DBMS, the DDBS would be homogenous, which is also called a 
-\emph{multidatabase system}. However, the heterogenity of a DDBS introduces "a significant cost in terms of performance, software complexity, and
-administration difficulty" \cite[p.~608, l.13--14]{Ramakrish2000} regarding the management of the distributed data.
+An architecture of a distributed database mangement system could look like depicted in Figure~\ref{fig:ddbs_arch}. Four different locations interconnected
+via a communication network are each holding a database which is connected to a DBMS managing the underlying database. The locations can be local, e.g.
+four computers or servers in one room, or global, e.g. four servers at different cities where the company holding this DDBS resides. The type of a DDBMS
+can be classified as \emph{homogenous} or \emph{heterogenous} where in a homogenous DDBS all participating sites share the same DBMS locally and in a
+heterogenous DDBS the sites may have a different DBMS with probably different data models \cite[p.~607]{Ramakrish2000}. For example, if in
+Figure~\ref{fig:ddbs_arch} all DBMSs (DBMS 1 -- DBMS 4) are the same DBMS, e.g. all are \citetalias{Ignite} nodes, then the distributed database system
+would be homogenous (cf. \cite[Fig.~2]{Jadhav2017}). If at least one of the locations is in control of a second DBMS, the DDBS would be homogenous, which
+is also called a \emph{multidatabase system}. However, the heterogenity of a DDBS introduces "a significant cost in terms of performance, software
+complexity, and administration difficulty" \cite[p.~608, l.13--14]{Ramakrish2000} regarding the management of the distributed data.
 
 \begin{figure}[h]
     \centering
@@ -52,48 +53,48 @@ discussed. The first, really popular architectural model is characterized by a d
 functionality, i.e. servers are responsible for data storage and management whereas clients provide user interfaces to query data from a server. In a
 Colloborating Server system, in contrast, all servers are able to decompose received queries that concern data from multiple servers to subqueries. The
 subqueries are then executed accordingly at the servers on their locally stored data and a result is computed from all the servers' answers. This is also
-described in Section~\ref{sec:theo_dqp}.
-In Middleware systems the task of query management and decomposition is handled by a single server and all other servers only need to perform queries against
-their local data.
+described in Section~\ref{sec:theo_dqp}. In Middleware systems the task of query management and decomposition is handled by a single server and all other
+servers only need to perform queries against their local data.
 
 
 
 \subsubsection{Fragmentation}
 \label{sec:theo_ddb_frag}
-The relations of distributed databases can be partitioned into fragments of the relations, i.e. the data from the tables is split up and assigned to one or 
-more of the databases that belong to the DDBS. The amount of data per database can be reduced by doing so. This \emph{fragmentation} can be achieved by using
-a certain fragmentation strategy and the resulting fragments, which contain parts of the whole data set, can then be dispersed across the network by mapping
-the fragments to databases that possibly reside at different physical locations which are not necessarily geographically distant. The in the following 
-introduced fragmentation alternatives will be elucidated by ways of small "toy" examples in Example~\ref{sec:theo_ddb_exmp}.
+The relations of distributed databases can be partitioned into fragments of the relations, i.e. the data from the tables is split up and assigned to one 
+or more of the databases that belong to the DDBS. The amount of data per database can be reduced by doing so. This \emph{fragmentation} can be achieved 
+by using a certain fragmentation strategy and the resulting fragments, which contain parts of the whole data set, can then be dispersed across the network
+by mapping the fragments to databases that possibly reside at different physical locations which are not necessarily geographically distant. The in the
+following introduced fragmentation alternatives will be elucidated by ways of small "toy" examples in Example~\ref{sec:theo_ddb_exmp}.
 
 One strategy to obtain a fragmentation of the data is the so-called \emph{horizontal fragmentation} \cite[p.~105]{Ozsu1991} that divides a relation in a 
-row-wise manner into smaller portions with only some of tuples that were contained in the original relation, i.e. a relation $R$ can be divided into fragments
-$F_1, F_2,\dots, F_n$ by assigning each tuple $\mu$ of the relation $R$ to at least one fragment $F_i,~i\in\{1,\dots,n\}$. The result of this is that for all 
-$i\in\{1,\dots,n\},~F_i \subseteq R$. Additionally, if there is no replication (cf. Section~\ref{sec:theo_ddb_repl}) applied to the data and each tuple is only
-assigned to exactly one fragment, the fragments are pairwise disjoint ($\forall \mu \in F_i$ it holds that $\mu \notin F_j, i\neq j, i,j\in\{1,\dots,n\}$) 
-if the relation $R$ does not contain any duplicate tuples itself. In the relational algebra such a \emph{primary horizontal fragmentation} can be described by
-a selection operation on the relation $R$ \cite[p.~109]{Ozsu1991}, whereas the selection condition defines the wanted mapping of tuples to fragments. 
-Regarding this primary horizontal fragmentation, a further fragmentation of another relation $S$ can be \emph{derived} by computing the semi-join of the
-relation $S$ with fragments $F_i,~i\in\{1,\dots,n\}$ of the primary relation $R$ \cite[p.~116f.]{Ozsu1991}, i.e. the derived fragments $G_i$ of the relation
-$S$ are computed as $G_i=S \ltimes F_i$ for $i\in\{1,\dots,n\}$. The \emph{derived horizontal fragmentation} depends on the underlying primary horizontal
-fragmentation, and, to prevent tuples in $S$ from getting lost during the semi-join with fragments of $R$, it is necessary to have for each tuple $y\in S$ 
-matching tuples in $R$ in order to let the tuples from $S$ "survive" the semi-join. An integrity constraint in form of a foreign key reference of the relation
-$S$ to the relation $R$ can be used to enforce this condition for the sake of completeness of the derived fragmentation. Though with the definition of the 
-derived horizontal fragmentation on a semi-join, inherently replication of tuples of $S$ in the derived fragments may occur if tuples in $S$ match multiple
-tuples that belong to different fragments of $R$ \cite[p.~121]{Ozsu1991}. This causes the fragments $G_i$ of $S$ not to be disjoint in general which is equal
-to a partial replication as described in Section~\ref{sec:theo_ddb_repl}.
+row-wise manner into smaller portions with only some of tuples that were contained in the original relation, i.e. a relation $R$ can be divided into 
+fragments $F_1, F_2,\dots, F_n$ by assigning each tuple $\mu$ of the relation $R$ to at least one fragment $F_i,~i\in\{1,\dots,n\}$. The result of this is
+that for all $i\in\{1,\dots,n\},~F_i \subseteq R$. Additionally, if there is no replication (cf. Section~\ref{sec:theo_ddb_repl}) applied to the data and
+each tuple is only assigned to exactly one fragment, the fragments are pairwise disjoint ($\forall \mu \in F_i$ it holds that 
+$\mu \notin F_j, i\neq j, i,j\in\{1,\dots,n\}$) if the relation $R$ does not contain any duplicate tuples itself. In the relational algebra such a
+\emph{primary horizontal fragmentation} can be described by a selection operation on the relation $R$ \cite[p.~109]{Ozsu1991}, whereas the selection 
+condition defines the wanted mapping of tuples to fragments. Regarding this primary horizontal fragmentation, a further fragmentation of another relation
+$S$ can be \emph{derived} by computing the semi-join of the relation $S$ with fragments $F_i,~i\in\{1,\dots,n\}$ of the primary relation $R$
+\cite[p.~116f.]{Ozsu1991}, i.e. the derived fragments $G_i$ of the relation $S$ are computed as $G_i=S \ltimes F_i$ for $i\in\{1,\dots,n\}$.
+The \emph{derived horizontal fragmentation} depends on the underlying primary horizontal fragmentation, and, to prevent tuples in $S$ from getting lost
+during the semi-join with fragments of $R$, it is necessary to have for each tuple $y\in S$ matching tuples in $R$ in order to let the tuples from $S$ 
+"survive" the semi-join. An integrity constraint in form of a foreign key reference of the relation $S$ to the relation $R$ can be used to enforce this
+condition for the sake of completeness of the derived fragmentation. Though with the definition of the derived horizontal fragmentation on a semi-join,
+inherently replication of tuples of $S$ in the derived fragments may occur if tuples in $S$ match multiple tuples that belong to different fragments of 
+$R$ \cite[p.~121]{Ozsu1991}. This causes the fragments $G_i$ of $S$ not to be disjoint in general which is equal to a partial replication as described 
+in Section~\ref{sec:theo_ddb_repl}.
 
 
 On the other hand, a \emph{vertical fragmentation} \cite[p.~122]{Ozsu1991} is a columnwise division of a relation $R$, such that each of the resulting
-fragments $F_1,F_2,\dots,F_n$ has a subset of the attributes of the relation $R$. To identify the original tuple to which a partitioned tuple of one of the
-fragments belongs to, it is necessary to have a primary key defined on the relation $R$ which can be stored with the subset of attributes of the tuple that is
-assigned to a fragment. If it is not the case that a primary key is set for the relation $R$, then an abstract, maybe randomly generated unique identifier has 
-to be introduced, i.e. as additional attribute, in order to match tuple fragments to their source. 
+fragments $F_1,F_2,\dots,F_n$ has a subset of the attributes of the relation $R$. To identify the original tuple to which a partitioned tuple of one of 
+the fragments belongs to, it is necessary to have a primary key defined on the relation $R$ which can be stored with the subset of attributes of the 
+tuple that is assigned to a fragment. If it is not the case that a primary key is set for the relation $R$, then an abstract, maybe randomly generated
+unique identifier has to be introduced, i.e. as additional attribute, in order to match tuple fragments to their source. 
 
 Another fragmentation strategy, which will only be mentioned here and not further analyzed, is the so-called \emph{hybrid fragmentation} or 
-\emph{nested fragmentation} \cite[p.~135f.]{Ozsu1991} that can be achieved by nesting horizontal and vertical fragmentations on a relation giving a complex
-partitioning of the data and arising lots of issues to consider when implementing an application based on data that is fragmented by such type of fragmentation
-strategy.
+\emph{nested fragmentation} \cite[p.~135f.]{Ozsu1991} that can be achieved by nesting horizontal and vertical fragmentations on a relation giving a 
+complex partitioning of the data and arising lots of issues to consider when implementing an application based on data that is fragmented by such type 
+of fragmentation strategy.
 
 \begin{exmp} \label{sec:theo_ddb_exmp}
 $ $\newline
@@ -115,13 +116,12 @@ Consider having three fragments $F_1$, $F_2$ and $F_3$ of the relation $R$ which
 attributes $a$ and $b$, as shown in Table~\ref{tab:r}. 
 A possible horizontal fragmentation is $F_1=\{(0,x), (1,x)\}$, $F_2=\{(2,y), (3,z)\}$ and $F_3=\{(7,g)\}$. 
 This fragmentation is illustrated by Table~\ref{tab:r_frag} and could be obtained from the three selections $F_1=\sigma_{a \leq 1}(R)$,
-$F_2=\sigma_{a \geq 2~\land~a \leq 5}(R)$ and $F_3=\sigma_{a \geq 6}(R)$. Here, each row of the table, i.e. each tuple $\mu \in R$, is assigned to exactly one
-of the fragments $F_i,~i\in\{1,2,3\}$, so there is no duplication of any tuple and the fragments are pairwise disjoint, but each tuple $\mu \in R$ is somewhere
-contained in one of the fragments. 
-Hence, the union $F_1 \cup F_2 \cup F_3$ of all the fragments yields the original tuple set, which means that the partitioned relation $R$ can be reconstructed
-from the fragments, because each of the original tuples is found in (at least) one fragment. Due to the fact that this primary horizontal fragmentation is
-complete and disjoint and that the fragmentation can be reverted by reconstruction of the original relation, the three fragmentation correctness rules
-\cite[p.~103]{Ozsu1991} are fulfilled.
+$F_2=\sigma_{a \geq 2~\land~a \leq 5}(R)$ and $F_3=\sigma_{a \geq 6}(R)$. Here, each row of the table, i.e. each tuple $\mu \in R$, is assigned to 
+exactly one of the fragments $F_i,~i\in\{1,2,3\}$, so there is no duplication of any tuple and the fragments are pairwise disjoint, but each tuple 
+$\mu \in R$ is somewhere contained in one of the fragments. Hence, the union $F_1 \cup F_2 \cup F_3$ of all the fragments yields the original tuple set,
+which means that the partitioned relation $R$ can be reconstructed from the fragments, because each of the original tuples is found in (at least) one
+fragment. Due to the fact that this primary horizontal fragmentation is complete and disjoint and that the fragmentation can be reverted by reconstruction
+of the original relation, the three fragmentation correctness rules \cite[p.~103]{Ozsu1991} are fulfilled.
 
 \begin{table}[h]
     \hspace*{\fill}
@@ -150,10 +150,10 @@ complete and disjoint and that the fragmentation can be reverted by reconstructi
     \label{tab:r_frag}
 \end{table}
 
-According to this primary horizontal fragmentation of $R$, a derived horizontal fragmentation of $S=\{(x, 0.5), (y, 0.3), (g, 9.9)\}$ (Table~\ref{tab:s}) over 
-the attributes $b$ and $c$ is obtained by computing the previously stated definition using a semi-join, fragment $G_i = S \ltimes F_i$ for $i\in\{1,2,3\}$.
-Based on the matches of tuples from $S$ with tuples in the fragments $F_i$, the derived fragments are $G_1=\{(x,0.5)\}$, $G_2=\{(y, 0.3)\}$ and 
-$G_3=\{(g, 9.9)\}$ (Table~\ref{tab:s}).
+According to this primary horizontal fragmentation of $R$, a derived horizontal fragmentation of $S=\{(x, 0.5), (y, 0.3), (g, 9.9)\}$ (Table~\ref{tab:s})
+over the attributes $b$ and $c$ is obtained by computing the previously stated definition using a semi-join, fragment $G_i = S \ltimes F_i$ for
+$i\in\{1,2,3\}$. Based on the matches of tuples from $S$ with tuples in the fragments $F_i$, the derived fragments are 
+$G_1=\{(x,0.5)\}$, $G_2=\{(y, 0.3)\}$ and $G_3=\{(g, 9.9)\}$ (Table~\ref{tab:s}).
 
 
 \begin{table}[h]
@@ -193,8 +193,8 @@ For the demonstration of an exemplary vertical fragmentation, consider the view 
 $T~=~R~{\tiny \textifsym{d|><|}}~S$ over the attribute set $\{a,b,c\}$. 
 This left outer join yields the tuple set $\{(0,x,0.5), (1,x,0.5), (2,y,0.3), (3,z,null), (7,g,9.9))\}$ (Table~\ref{tab:join_vert_frag}). The so obtained
 relation (or view) can be partitioned vertically based on the two attribute subsets $\{a,b\}$ and $\{b,c\}$ that produce two vertical fragments $H_1$ and 
-$H_2$, which are also depicted in Table~\ref{tab:join_vert_frag} next to the original relation. Here, each tuple of one of the vertical fragments contains the
-attribute a, which is, in this case, a unique identifier for the original tuple from $T$.
+$H_2$, which are also depicted in Table~\ref{tab:join_vert_frag} next to the original relation. Here, each tuple of one of the vertical fragments contains 
+the attribute a, which is, in this case, a unique identifier for the original tuple from $T$.
 
 \begin{table}[h]
     \centering
@@ -239,55 +239,57 @@ attribute a, which is, in this case, a unique identifier for the original tuple 
 \label{sec:theo_ddb_repl}
 The \emph{data replication} as discussed in \citet{Wiese2014} is not relevant for the implementation part in this work, and so this topic will only be
 mentioned here and the investigations on it will be kept short as it still is an important part of distributed databases. Replication is a design approach
-for a DDBS that is used for storing the data together with copies of the data. The data is duplicated and can be distributed multiple times to even different
-sites such that a the same data is present on different servers. In contrast to this, the data can also be \emph{partitioned} where none of the data fragments,
-which are obtained from a fragmentation as analyzed in Section~\ref{sec:theo_ddb_frag}, is duplicated. There exist two alternative basic strategies for a 
-replication design \cite[p.~12]{Ozsu1991}. One of them is the \emph{full replication} where the whole database is stored at each site, i.e. the data is
-distributed to each server and so each server has exactly the same data set as all other servers. The other one is the \emph{partial replication} where each
-of the data partitions can distributed to more than one server. A partial replication for example could be used in case of having each partition at a server 
-that is primarily responsible for that partition (primary partition) and at some other servers where the partitions are held as backup copies for the primary
-partition.
+for a DDBS that is used for storing the data together with copies of the data. The data is duplicated and can be distributed multiple times to even 
+different sites such that a the same data is present on different servers. In contrast to this, the data can also be \emph{partitioned} where none of the
+data fragments, which are obtained from a fragmentation as analyzed in Section~\ref{sec:theo_ddb_frag}, is duplicated. There exist two alternative basic
+strategies for a replication design \cite[p.~12]{Ozsu1991}. One of them is the \emph{full replication} where the whole database is stored at each site,
+i.e. the data is distributed to each server and so each server has exactly the same data set as all other servers. The other one is the 
+\emph{partial replication} where each of the data partitions can distributed to more than one server. A partial replication for example could be used in
+case of having each partition at a server that is primarily responsible for that partition (primary partition) and at some other servers where the
+partitions are held as backup copies for the primary partition.
 \todo[inline]{maybe refer to example ignite (picture)}
 
 
 \subsubsection{Advantages and Disadvantages of DDBMS}
 Using distributed databases for storing and managing information can be advantageous. As already mentioned, the distribution of the data across multiple 
-servers can provide features like higher availability of the data, which can come from failure tolerance, as well as more efficient interaction with the DDBS. 
-Several advantages of distributed database systems are (cf. \citep{Jadhav2017} and \cite[p.~8ff.]{Ozsu1991}):
+servers can provide features like higher availability of the data, which can come from failure tolerance, as well as more efficient interaction with the
+DDBS. Several advantages of distributed database systems are (cf. \citep{Jadhav2017} and \cite[p.~8ff.]{Ozsu1991}):
 
 \begin{enumerate}
     \item Local Autonomy: Data that is frequently accessed from a certain user group can be placed at the site which is the closest one to the user group
             allowing for local control and indepent access.
     \item Improved Performance: Parallelizing queries and resource usage can lead to higher efficiency.
-    \item Improved Reliability/Availability: Distributed data has a higher resistance to inaccessibility in case of a failure because it may be retrieved from
-            another site and work on at least the part of the data which is not affected by a failure can be guaranteed. 
+    \item Improved Reliability/Availability: Distributed data has a higher resistance to inaccessibility in case of a failure because it may be retrieved 
+            from another site and work on at least the part of the data which is not affected by a failure can be guaranteed. 
     \item Expandability: The DDBS can be simply expanded by e.g. additional servers that improve the load balancing abilities of the system
     \item Shareability: Distributed databases inherently offer the possibility to share the stored data
 \end{enumerate}
 
 On the contrary, one big disadvantage of a DDBS is that installation, control and maintenance of such a system are really hard because of the way
-more complex appearance of a DDBS compared to the centralized database concept \citep{Jadhav2017}. The design of a DDBS is also crucial as it can cause the 
-system to be less efficient if the design is not well-suited to the application's requirements what can lead to bad resource usage and high communication 
-costs in the interconnecting network. More issues are security of system and data, which demand some extra effort in terms of protection because the sites and 
-data fragments are not centralized but remote making them more vulnerable if not secured accordingly, and economics where more infrastructure and hardware for 
-a distribution to multiple sites come along with higher costs \cite{Kumar2013}.
+more complex appearance of a DDBS compared to the centralized database concept \citep{Jadhav2017}. The design of a DDBS is also crucial as it can cause 
+the system to be less efficient if the design is not well-suited to the application's requirements what can lead to bad resource usage and high
+communication costs in the interconnecting network. More issues are security of system and data, which demand some extra effort in terms of protection
+because the sites and data fragments are not centralized but remote making them more vulnerable if not secured accordingly, and economics where more
+infrastructure and hardware for a distribution to multiple sites come along with higher costs \cite{Kumar2013}.
 
 
 \subsection{Distributed Query Processing}
 \label{sec:theo_dqp}
-\todo[inline]{Distributed query processing (maybe subsubsection--> Öszu; Ramakrishnan p.614}
+\todo[inline]{Distributed query processing intro words}
 
-A DDBS has to be able to answer a query in the same manner as a non-distributed relational database. The result of a query is a set of tuples fulfilling the
-query. To obtain such a set the database system uses relational algebra operations for its computation, e.g. a join of two tables or the selection on an
-attribute with a certain condition. When now considering distributed data, which could be fragmented and replicated, the performance of computing answers to
-the query can be a big issue due to increased network communication inferred by data transfer between the database sites \cite[p.~173]{Ozsu1991}. This can even
-occur for simple queries that only scan a certain relation and project to some subset of the attributes.
+\subsubsection{Overview}
+\label{sec:theo_dqp_over}
+A relational DDBS has to be able to answer a query in the same manner as a non-distributed relational database. The result of a query is a set of tuples
+fulfilling the query. To obtain such a set the database system uses relational algebra operations for its computation, e.g. a join of two tables or the
+selection on an attribute with a certain condition. When now considering distributed data, which could be fragmented and replicated, the performance of
+computing answers to the query can be a big issue due to increased network communication inferred by data transfer between the database sites 
+\cite[p.~173]{Ozsu1991}. This can even occur for simple queries that only scan a certain relation and project to some subset of the attributes.
 
 
-\begin{exmp}
+\begin{exmp} \label{sec:theo_dqp_exmp}
 Again, examine a similar situation as in Example~\ref{sec:theo_ddb_exmp} regarding the data from Table~\ref{tab:r} and Table~\ref{tab:s}. For example, 
-assume the both relations $R$ and $S$ are not fragmented, not replicated and distributed in such a way that one server holds all the tuples of relation 
-$R$ and another server holds all the tuples of relation $S$ as shown in Figure~\ref{fig:dqp_rs_simple}.
+assume that both relations $R$ and $S$ are neither fragmented nor replicated but distributed in such a way that one server holds all the tuples of 
+relation $R$ and another server holds all the tuples of relation $S$ as shown in Figure~\ref{fig:dqp_rs_simple}.
 
 
 \begin{figure}[h]
@@ -336,12 +338,15 @@ Then, a rather simple query without any joins and only one relation concerned li
 \end{verbatim}
 can be evaluated - in this case easily - by the DDBMS by sending the query only to server $S_1$ in order to correctly fetch the tuples for the result from
 there. The knowledge about the distribution of relation $R$ and $S$ enables the DDBMS to decompose and optimize the query. But upon a join, querying is not
-that simple anymore due to the fact that now tuples have to be fetched from multiple servers and combined. For example, have a look at the query
+that simple anymore due to the fact that now tuples have to be fetched from multiple servers and be combined with one another. 
+For example, have a look at the query
 \begin{verbatim}
     SELECT R.a, R.b, S.c FROM R, S WHERE R.b = S.b AND S.c < 1
 \end{verbatim}
 which could be answered, e.g. by sending all the tuples in $S$ from $S_2$ to $S_1$ which would then be joined and selected locally and the result would be
-returned. Another possible computation could be done by decomposing the query and sending the subquery
+returned. Instead of sending all tuples in $S$ from $S_2$ to $S_1$, the selection condition \verb!S.c < 1! could be pushed down and evaluated locally on 
+$S_1$ to improve the execution by reducing the amount of tuples that has to be sent via the network. This results in a decrease of the by data transfer
+implied delay. Another possible, even more efficient computation could be done by decomposing the query and sending the subquery
 \begin{verbatim}
     SELECT S.b FROM S WHERE S.c < 1
 \end{verbatim}
@@ -349,10 +354,62 @@ to the server $S_2$ and the subquery
 \begin{verbatim}
     SELECT * FROM R
 \end{verbatim}
-to the server $S_1$. 
-The results of both queries could then be joined locally at the client-side (cf. Client-Server architecture from Section~\ref{sec:theo_ddb_arch}) or at a 
-third server which is responsible for the query processing (cf. Middleware architecture from Section~\ref{sec:theo_ddb_arch}).
-
-
+to the server $S_1$. The results of both queries could then be joined locally at the client-side 
+(cf. Client-Server architecture from Section~\ref{sec:theo_ddb_arch}) or at a third server which is responsible for the query processing 
+(cf. Middleware architecture from Section~\ref{sec:theo_ddb_arch}).
 
 \end{exmp}
+
+The Example~\ref{sec:theo_dqp_exmp} indicates the requirement and the possibilities of \emph{distributed query processing} strategies that allow for
+transforming a query stated against the database, e.g. written in SQL, into an execution plan consisting of relational algebra instructions for the
+database which yield the correct result set for the query in an optimal way (cf. \cite[p.~174]{Ozsu1991}, \citep{Sattler2009DistQuer}). However, under a 
+distributed environment, the relational algebra alone is not sufficient to process the queries as it lacks operators for sending and retrieving data from
+another server to complete the answer computation \cite[p.~175]{Ozsu1991}, thus, distributed query processing strategies come along with more difficulties.
+Because of this and because of the widespread subproblems, that range from the used languages over the optimized resource usage to the possibilities and 
+issues brought into the system by fragmentation and replication, only several chosen aspects will be discussed in the following.
+
+
+\subsubsection{Query Decomposition \& Data Localization}
+\label{sec:theo_dqp_decomp}
+
+\emph{Query decomposition} means the process of rewriting the query to a normalized form (cf. \cite[p.~21,p.189f.]{Ozsu1991}), followed by a semantical
+analysis, a simplification of the query and a rewriting and restructuring to a relational algebra query \cite[p.~183]{Ozsu1991}. These four steps provide
+as their result an algebraic query that can be optimized, e.g. as discussed in Example~\ref{sec:theo_dqp_exmp} for a SQL query where sending all tuples
+from one server to another server is obviously less efficient than reducing the amount of data that has to be transmitted across the network between the
+servers, whereas the real optimization is applied to the rewritten algebraic query, which can be displayed by a \emph{relational algebra tree}
+(cf. \cite[Figure~8.3, p.~195]{Ozsu1991}), and not to the SQL query directly. The actual distribution of the data does not play any role here because
+yet only global relations are considered when transforming into an algebra query.
+
+Fragmentation and replication, as discussed in Section~\ref{sec:theo_ddb_frag} and Section~\ref{sec:theo_ddb_repl}, respectively, influence the query
+execution strategy as they require for a distribution of the query itself to possibly multiple servers, too, in order to get the complete and correct 
+result set. For the sake of simplicity and due to the fact that the replication will not be implemented later, it is assumed that the data is only 
+fragmented horizontally and not replicated, i.e. every tuple is assigned to exactly one fragment. This also enables for the reconstruction of the original,
+global relations by reverting the fragmentation. This so-called \emph{localization program} \cite[p.~199]{Ozsu1991} can be expressed as operations of the
+relational algebra. This was already discussed in Example~\ref{sec:theo_ddb_exmp} where the fragmentation of the relation $R$ was reversible by the union 
+of all the horizontal fragments of $R$. Hence, a very simple, but rather inefficient way to rewrite the actual pyhsical distribution of the data into the
+query is to substitute each global relation in the algebra query by its localization program \cite[p.~199]{Ozsu1991}.
+
+\begin{exmp}
+\label{sec:theo_dqp_exmp2}
+Consider again the relation $R$ and its horizontal fragmentation as introduced in Example~\ref{sec:theo_ddb_exmp} and the query on the global relation $R$,
+\verb!SELECT R.a FROM R!. This query would have to be rewritten as - for better readability in SQL and not in the relational algebra -
+\begin{verbatim}
+    (SELECT F_1.a FROM F_1) 
+    UNION (SELECT F_2.a FROM F_2) 
+    UNION (SELECT F_3.a FROM F_3)
+\end{verbatim}
+where the \verb!F_i!, for~$i\in\{1,2,3\}$, correspond to the three horizontal fragments $F_1, F_2$ and $F_3$ of the relation $R$. In case of this simple 
+query, it has to be rewritten in this naive way as there is no other way of rewriting without losing correctness or completeness of the result set. 
+On the contrary, if the initial query containd a selection condition on the attribute $a$, like \verb!WHERE R.a > 5!, the fragment $F_3$ alone suffices 
+to provide all the tuples required for a correct and complete result set to this query.
+\end{exmp}
+
+As seen previously in Example~\ref{sec:theo_dqp_exmp2}, to a given fragmentation there can exist rewritten queries that are more efficient as the pure
+localization program substitution as they realize simplifications facilitated by the nature of the fragmentation and its induced physical distribution of
+the data. This \emph{reduction techniques} are dependent on the type of fragmentation, i.e. whether it is a (primary/derived) horizontal or vertical
+fragmentation, and are applied as rules in order to make use of the possible simplifications and improvements regarding the query
+\cite[p.~199ff.]{Ozsu1991}.
+
+
+\subsubsection{Optimization}
+\label{sec:theo_dqp_opt}

@@ -25,7 +25,8 @@ horizontal fragmentation for a relation. The clustering procedure depends on a s
 resulting in a clustering of the column's values, such that values with a high similarity belong to the same cluster. Hence, a fragmentation of relations
 that have common attributes with this horizontally fragmented relation, i.e. attributes that will be used in queries to join these two relations, can be 
 \emph{derived}~\citep[p.~116f.]{Ozsu1991}, such that the tuples which are about to be joined reside on the same server allowing for better performance in 
-queries compared to query processing with a distributed join which has to be applied if the data is not residing at the same site~\citep{Sattler2009}.
+queries compared to query processing with a distributed join which has to be applied if the data is not residing at the same
+site~\citep{Sattler2009DistJoin}.
 Thus, this derived horizontal fragmentation improves data locality~\citep{Wiese2014} because the probably high delay of data transmission over the 
 network, which is needed in case of a distributed join, will be avoided to the joy of any database user.
 
