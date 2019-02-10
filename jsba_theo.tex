@@ -191,10 +191,13 @@ $G_1=\{(x,0.5)\}$, $G_2=\{(y, 0.3)\}$ and $G_3=\{(g, 9.9)\}$ (Table~\ref{tab:s})
 
 For the demonstration of an exemplary vertical fragmentation, consider the view $T$ calculated as the left outer join of the two relations $R$ and $S$, 
 $T~=~R~{\tiny \textifsym{d|><|}}~S$ over the attribute set $\{a,b,c\}$. 
-This left outer join yields the tuple set $\{(0,x,0.5), (1,x,0.5), (2,y,0.3), (3,z,null), (7,g,9.9))\}$ (Table~\ref{tab:join_vert_frag}). The so obtained
-relation (or view) can be partitioned vertically based on the two attribute subsets $\{a,b\}$ and $\{b,c\}$ that produce two vertical fragments $H_1$ and 
-$H_2$, which are also depicted in Table~\ref{tab:join_vert_frag} next to the original relation. Here, each tuple of one of the vertical fragments contains 
-the attribute a, which is, in this case, a unique identifier for the original tuple from $T$.
+This left outer join yields the tuple set (see Table~\ref{tab:join_vert_frag})
+\[
+\{(0,x,0.5), (1,x,0.5), (2,y,0.3), (3,z,null), (7,g,9.9))\}.
+\]
+The so obtained relation (or view) can be partitioned vertically based on the two attribute subsets $\{a,b\}$ and $\{b,c\}$ that produce two vertical
+fragments $H_1$ and $H_2$, which are also depicted in Table~\ref{tab:join_vert_frag} next to the original relation. Here, each tuple of one of the 
+vertical fragments contains the attribute a, which is, in this case, a unique identifier for the original tuple from $T$.
 
 \begin{table}[h]
     \centering
@@ -275,7 +278,9 @@ infrastructure and hardware for a distribution to multiple sites come along with
 
 \subsection{Distributed Query Processing}
 \label{sec:theo_dqp}
-\todo[inline]{Distributed query processing intro words}
+As the data is physically distributed, queries have to be processed and rewritten according to the underlying distribution to allow for an appropriate
+answer to the given question. This section gives a brief insight in the mechanisms of processing distributed queries by applying transformations, rewriting
+rules and optimization strategies.
 
 \subsubsection{Overview}
 \label{sec:theo_dqp_over}
@@ -384,32 +389,50 @@ Fragmentation and replication, as discussed in Section~\ref{sec:theo_ddb_frag} a
 execution strategy as they require for a distribution of the query itself to possibly multiple servers, too, in order to get the complete and correct 
 result set. For the sake of simplicity and due to the fact that the replication will not be implemented later, it is assumed that the data is only 
 fragmented horizontally and not replicated, i.e. every tuple is assigned to exactly one fragment. This also enables for the reconstruction of the original,
-global relations by reverting the fragmentation. This so-called \emph{localization program} \cite[p.~199]{Ozsu1991} can be expressed as operations of the
-relational algebra. This was already discussed in Example~\ref{sec:theo_ddb_exmp} where the fragmentation of the relation $R$ was reversible by the union 
-of all the horizontal fragments of $R$. Hence, a very simple, but rather inefficient way to rewrite the actual pyhsical distribution of the data into the
-query is to substitute each global relation in the algebra query by its localization program \cite[p.~199]{Ozsu1991}.
+global relations by reverting the fragmentation. This so-called \emph{localization program} \cite[p.~199]{Ozsu1991} obtained by reverting the 
+fragmentation can be expressed as operations of the relational algebra. This was already discussed in Example~\ref{sec:theo_ddb_exmp} where the
+fragmentation of the relation $R$ was reversible by the union of all the horizontal fragments of $R$. Hence, a very simple, but rather inefficient way to
+rewrite the actual pyhsical distribution of the data into the query is to substitute each global relation in the algebra query by its localization program 
+\cite[p.~199]{Ozsu1991}.
 
 \begin{exmp}
 \label{sec:theo_dqp_exmp2}
 Consider again the relation $R$ and its horizontal fragmentation as introduced in Example~\ref{sec:theo_ddb_exmp} and the query on the global relation $R$,
-\verb!SELECT R.a FROM R!. This query would have to be rewritten as - for better readability in SQL and not in the relational algebra -
+\verb!SELECT R.a FROM R!. The according localization program is $R=F_1 \cup F_2 \cup F_3$, and this query would have to be rewritten as - for better
+readability in SQL and not in the relational algebra -
 \begin{verbatim}
     (SELECT F_1.a FROM F_1) 
     UNION (SELECT F_2.a FROM F_2) 
     UNION (SELECT F_3.a FROM F_3)
 \end{verbatim}
-where the \verb!F_i!, for~$i\in\{1,2,3\}$, correspond to the three horizontal fragments $F_1, F_2$ and $F_3$ of the relation $R$. In case of this simple 
-query, it has to be rewritten in this naive way as there is no other way of rewriting without losing correctness or completeness of the result set. 
-On the contrary, if the initial query containd a selection condition on the attribute $a$, like \verb!WHERE R.a > 5!, the fragment $F_3$ alone suffices 
-to provide all the tuples required for a correct and complete result set to this query.
+where the \verb!F_i!, for~$i\in\{1,2,3\}$, correspond to the three horizontal fragments $F_1, F_2$ and $F_3$ of the relation $R$ (see 
+Table~\ref{tab:r_frag}). In case of this simple query, it has to be rewritten in this naive way as there is no other way of rewriting without losing
+correctness or completeness of the result set. 
+On the contrary, if the initial query contained a selection condition on the attribute $a$, like \verb!WHERE R.a > 5!, the fragment $F_3$ alone suffices 
+to provide all the tuples required for a correct and complete result set to this query, thus, querying all the fragments would cause additional overhead
+and data transfer.
 \end{exmp}
 
 As seen previously in Example~\ref{sec:theo_dqp_exmp2}, to a given fragmentation there can exist rewritten queries that are more efficient as the pure
 localization program substitution as they realize simplifications facilitated by the nature of the fragmentation and its induced physical distribution of
-the data. This \emph{reduction techniques} are dependent on the type of fragmentation, i.e. whether it is a (primary/derived) horizontal or vertical
-fragmentation, and are applied as rules in order to make use of the possible simplifications and improvements regarding the query
-\cite[p.~199ff.]{Ozsu1991}.
+the data. This \emph{reduction techniques} \cite[p.~199]{Ozsu1991} are dependent on the type of fragmentation, i.e. whether it is a (primary/derived)
+horizontal or vertical fragmentation or even hybrid fragmentation, and they are applied as rules in order to make use of the possible simplifications and 
+improvements regarding the query. In \citet[p.~199ff.]{Ozsu1991} there are described the rules of reduction for the different fragmentation types and 
+partially for several relational algebra operators like joins or selections.
 
 
 \subsubsection{Optimization}
 \label{sec:theo_dqp_opt}
+Distributed queries, that have been rewritten in terms of query decomposition and data localization as described briefly in the previous section, are
+furthermore improved by an \emph{optimizer} that searches for approximately optimal strategies on how to execute a certain query and prevents the 
+execution from following rather bad strategies \cite[p.~210]{Ozsu1991}. This is mainly done by selecting a certain ordering of the algebraic operations, 
+which have to be performed upon the query execution, by minimizing the predicted execution costs of alternative orderings and by additional 
+communication-based operations \cite[p.~210f.]{Ozsu1991}, whereas the predicted execution costs strongly depend on the costs for communication in the 
+network but are also influenced by occuring local processing costs, e.g. the time or overhead a server needs to fetch a certain amount of tuples from a
+relation. Furthermore, the prediction of the costs for execution alternatives takes other database statistics, e.g. about the fragmented relations and 
+their schema or about cardinalities of intermediate results \cite[p.214ff.]{Ozsu1991}, i.e. an estimation of the size of the according intermediate result 
+set in terms of numbers of tuples, into account. For example, the size of the result set of a join of two relations, $J=R \bowtie S$, is of maximal
+size only if all tuples from $R$ can be joined with each tuple from $S$, i.e. a cartesian product of the two relations. Then, the result set encompasses 
+$card(J)=card(R)*card(S)$ tuples (cf. \cite[p.~215]{Ozsu1991}). On the other side, the result set of the join could as well be empty when no tuples of both
+relations are able to be joined. Therefore, a lower and an upper bound for the cardinality of any join of two relations could be provided as $card(J)>=0$
+and $card(J)<=card(R)*card(S)$, respectively.
