@@ -2,3 +2,63 @@
 
 % Appendix
 \section{Appendix}
+\label{app}
+
+% List of Queries
+\subsection{Sample Queries}
+\label{app:queries}
+
+\begin{enumerate}
+    \item \begin{verbatim}
+        SELECT i.disease, p.* 
+        FROM ILL i, INFO p 
+        WHERE i.id = p.id
+    \end{verbatim}
+   
+    \item \begin{verbatim}
+        SELECT p.name, count(i.disease) 
+        FROM ILL i, INFO p 
+        WHERE i.id = p.id 
+        GROUP BY p.name 
+    \end{verbatim}
+    
+    \item \begin{verbatim}
+        SELECT avg(p.age)
+        FROM INFO p
+    \end{verbatim}
+    
+    \item \begin{verbatim}
+        SELECT p.name, p.age, p.address 
+        FROM ILL i, INFO p 
+        WHERE i.id = p.id 
+            AND i.disease='Cough'
+    \end{verbatim}
+    
+    \item \begin{verbatim}
+        SELECT p.name, p.age, p.address 
+        FROM ILL i, INFO p 
+        WHERE i.id = p.id 
+            AND i.disease='Liver Failure'
+    \end{verbatim}
+    
+
+    \item \begin{verbatim}
+        SELECT p.name, p.age, p.address 
+        FROM ILL i1, ILL i2, INFO p 
+        WHERE i1.id = p.id 
+            AND i2.id = p.id 
+            AND i1.disease='Liver Failure' 
+            AND i2.disease='Hemoptysis'
+    \end{verbatim}
+
+
+    \item \begin{verbatim}
+        SELECT p.name, i1.disease, i2.disease 
+        FROM ILL i1, ILL i2, INFO p 
+        WHERE i1.id = p.id 
+            AND i2.id = p.id 
+            AND i1.disease <> i2.disease
+    \end{verbatim}
+
+
+\end{enumerate}
