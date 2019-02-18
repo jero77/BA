@@ -435,4 +435,5 @@ set in terms of numbers of tuples, into account. For example, the size of the re
 size only if all tuples from $R$ can be joined with each tuple from $S$, i.e. a cartesian product of the two relations. Then, the result set encompasses 
 $card(J)=card(R)*card(S)$ tuples (cf. \cite[p.~215]{Ozsu1991}). On the other side, the result set of the join could as well be empty when no tuples of both
 relations are able to be joined. Therefore, a lower and an upper bound for the cardinality of any join of two relations could be provided as $card(J)>=0$
-and $card(J)<=card(R)*card(S)$, respectively.
+and $card(J)<=card(R)*card(S)$, respectively. Based on this estimations, query execution plans can be modified in order to get the, in terms of efficiency
+or performance, most valuable execution.
