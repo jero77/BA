@@ -23,7 +23,8 @@
 \usepackage{mathtools}
 \usepackage{amsthm}
 \theoremstyle{definition}
-\newtheorem{exmp}{Example}[section]     % for examples
+\newtheorem{exmp}{Example}[section]             % for examples  ([section] = new counter for every section)
+\newtheorem{definition}{Definition}[section]    % for definitions 
     % joins, etc.
 \usepackage{amssymb}
 \usepackage{ifsym}
@@ -41,7 +42,7 @@
 \usepackage{tabularx}
 
 % frames
-\usepackage{mdframed}
+\usepackage{framed}
 
 % 1.5 spacing
 \onehalfspacing

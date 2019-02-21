@@ -27,6 +27,7 @@
  \end{enumerate}
  
 \todo[inline]{Maybe switch following section to implementation chapter instead of methdods}
+\todo[inline]{Summarize content of this section briefly}
 
 \subsection{Apache Ignite}
 \label{sec:meth_ign}
@@ -38,13 +39,14 @@ Its main features are distributed in-memory storage as well as optionally persis
 supporting SQL database or as a distributed key-value in-memory data grid. There are a lot more features provided by \citetalias{Ignite} that are not of
 relevance here and will be left out because of that reason, thus, in the following there will be a focus on the distributed SQL database part.
 Furthermore, the implementation will be based on a pure in-memory storage where all the data will be stored entirely in the RAM without any persistent 
-storage of the data due to performance issues. The of \citetalias{Ignite} provided SQL-capable in-memory DDB instances can be spread across the network via 
-a set of interconnected Ignite nodes that form a so-called \emph{cluster}. Each node of the cluster can be hosted by a different machine in a Java Virtual 
-Machine (JVM), but there can be multiple nodes on the same machine, too. A node can be either a server node, which is responsible for storing and 
-processing data, or a client node that is able to connect remotely to the cluster and compute or query from the client side. Figure~\ref{fig:ign_cluster} 
-shows a sample cluster consisting of 6 server nodes which are responsible for computations and storing data. This servers can be accessed remotely from 
-clients that can connect to the cluster via an programming language API (e.g. Java), via a JDBC or ODBC connection or via a REST-API (see documentation
-for details).
+storage of the data due to performance issues. The of \citetalias{Ignite} provided SQL-capable in-memory DDB instances can be spread across the network 
+via a set of interconnected Ignite nodes that form a so-called \emph{cluster}. Each node of the cluster can be hosted by a different physical machine 
+in a Java Virtual Machine (JVM), but there can be multiple nodes on the same machine, too. Even multiple nodes running in the same virtual machine are
+possible. With the underlying Client-Server architecture, a node can be either a server node, which is responsible for storing and processing data, or a
+client node that is able to connect remotely to the cluster of server nodes and compute or query from the client side. Figure~\ref{fig:ign_cluster} shows
+a sample cluster consisting of 6 server nodes which are responsible for computations and storing data. This servers can be accessed remotely from clients
+that can connect to the cluster via an programming language API (e.g. Java), via a JDBC or ODBC connection or via a REST-API (see documentation for
+details). 
 
 \begin{figure}[h]
     \centering
@@ -59,12 +61,12 @@ for details).
 The server nodes of an Ignite cluster store some certain data of the whole data set depending on the fragmentation (partitioning, cf.
 Section~\ref{sec:theo_ddb_frag}) and replication (cf. Section~\ref{sec:theo_ddb_repl}). The fragmentation and replication is always defined for relations,
 i.e. the tables of the relational DDB. For example, under full replication each server would store the total data of the relation and in the partitioned 
-mode the relation is partitioned and each server is then responsible for only a subset of the data. It is also possible to have partitioning and replication
-at the same time if the partitions of the data are stored on more than one server such that each partition of the data is stored on one server as primary
-partition and on the other servers as backup copies for higher availability and data resiliency in case of server node failures. In replicated mode, a
-balancing of the data load is achieved by a partitioning of the data of the relation with hash functions into subsets of nearly equal size that are
-dispersed equally among all nodes of the cluster to exploit as much memory as possible on all nodes. However, even more memory is available if there 
-is no replication of the data in form of redundant copies that would consume additional parts of the total available memory. 
+mode the relation is partitioned and each server is then responsible for only a subset of the data. It is also possible to have partitioning and 
+replication at the same time if the partitions of the data are stored on more than one server such that each partition of the data is stored on one 
+server as primary partition and on the other servers as backup copies for higher availability and data resiliency in case of server node failures. 
+In replicated mode, a balancing of the data load is achieved by a partitioning of the data of the relation with hash functions into subsets of nearly 
+equal size that are dispersed equally among all nodes of the cluster to exploit as much memory as possible on all nodes. However, even more memory is
+available if there is no replication of the data in form of redundant copies that would consume additional parts of the total available memory. 
 
 The partitioning is always a horizontal fragmentation of the data but the way how this is computed is only syntactically defined with hash functions, thus,
 there are no explicit selection conditions on a certain attribute of the relation that represent a horizontal fragment as described in the
@@ -80,12 +82,15 @@ One important concept of \citetalias{Ignite} is the collocation of data with dat
 (cf. Section~\ref{sec:theo_ddb_frag}). Hereby, data that is accessed together, e.g. because it is joined via a common attribute or a foreign key reference,
 is also stored together on the same server which improves the data locality~\citep{Wiese2014} and allows for collocated distributed joins that benefit from
 this improvement in the data locality as the costly data transfer of data, which is required to obtain an answer to a query, across the network is 
-avoided. This \emph{affinity collocation} is internally defined for the key-value store underlying the relational SQL database and restricts its usage to 
-a single affinity key definition per relation. With this restriction, there can not be a collocation of three or more relations that could be joined via a 
-chain of join conditions where the joining attributes, that would form a possible affinity key, are different. An affinity key be the same as the primary 
-key of the relation or an attribute of a composite primary key.
+avoided. This \emph{affinity collocation} is internally defined for the key-value store underlying the relational SQL database ensuring that all entries 
+of collocated tables where the affinity keys match are stored on the same server. The usage is restricted to a single affinity key definition per 
+relation. With this restriction, there can not be a collocation of three or more relations that could be joined via a chain of join conditions where the
+joining attributes, that would form a possible affinity key, are different. An affinity key can be the same as the primary key of the relation or an 
+attribute of a composite primary key of the relation. The concept of affinity collocation strongly corresponds to the primary and derived horizontal
+fragmentation of relations (cf. Section~\ref{sec:theo_ddb_frag}), i.e. the derived fragmentation also ensures that tuples from the derived horizontal 
+fragments are located at the same server where also the tuples reside with which they can and will be joined in SQL queries.
 
-Joins between partitioned relations require for collocation of the data that is about to be joined, otherwise a non-collocated distributed join has to be
+Joins between partitioned relations require for collocation of the data that is about to be joined. Otherwise, a non-collocated distributed join has to be
 performed or the result set will be incomplete as the non-collocated parts of the data can not be joined locally by the nodes. If all the joined relations
 in the SQL query are collocated, the query can be evaluated locally by each node, because all the data they need to compute a correct result set regarding 
 their portion of the whole data in the cluster is available, i.e. stored by themselves. The query execution for this case is depicted in
@@ -105,7 +110,10 @@ On the other side, non-collocated joins require for additional communication and
 for a join or another computation, is not locally present, thus, the nodes have to sent requests for the data to other nodes to complete their result set 
 computations appropriately. This additional data transfer implies a bad efficiency of query execution as it depends on the transmission duration of
 probably bigger data sets between the nodes. Furthermore, this causes additional load on the network that can decrease the performance of other tasks or
-operations. The query execution of a non-collocated, distributed query is sketched in Figure~\ref{fig:ign_noncoll}. 
+operations. Non-collocated joins must be enabled explicitly in \citetalias{Ignite} to enforce the distributed answering with data transfer across the
+cluster if necessary. If not enabled explicitly, the query will be executed in a collocated manner which, in general, leads to incomplete result sets due
+to the unavailable locality of required data. The general flow of a query execution of a non-collocated, distributed query is sketched in
+Figure~\ref{fig:ign_noncoll}. 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=0.6\textwidth,keepaspectratio=true]{img/95f09db-Non_collocated_sql_queries.png}
@@ -117,11 +125,119 @@ In comparison to Figure~\ref{fig:ign_collocated}, the additional data transfer, 
 potential data movement $D(Q)$ in a peer-to-peer fashion between all pairs of nodes. However, the data request of a node can be sent as a unicast request 
 to a certain node of the cluster (peer-to-peer communication) or as a broadcast request to all other nodes. This decision depends on whether the 
 requesting node can identify the exact location of the data, i.e. if it is a join on a primary or affinity key, or if it has to request the missing data
-from all other nodes otherwise.
+from all other nodes otherwise. 
 
+ 
  
 \subsection{Clustering-based Fragmentation}
 \label{sec:meth_cbfr}
 
+The \emph{clustering-based fragmentation} \citep{Wiese2014} is a horizontal fragmentation strategy that, on the one hand, enables fragmentation regarding 
+a similarity metric which allows for a more semantic partitioning of the data set, and, on the other hand, supports the \emph{similarity-based query
+answering} (cf. Section~\ref{sec:meth_sbqa}), and the, for example in case of a query failure, desired \emph{flexible query answering} 
+(cf. Section~\ref{sec:meth_fqa}). The underlying clustering is computed based on an approximation algorithm \citep{Gonzales1985} with respect to all 
+values that can occur for a chosen \emph{relaxation attribute} of the relation, the \emph{active domain} as defined in the following (according to
+Definition 2 in \cite{Wiese2014}).
+
+\begin{definition}
+Given a relaxation attribute $A$ and a relation instance $R$ (set of tuples), let $\pi_A(R)$ denote the \emph{active domain} of the relaxation attribute
+$A$ of the relation $R$.
+\end{definition}
+
+With the chosen relaxation attribute $A$ of a relation $R$ and a pairwise similarity $sim(a, b)$, $\pi_A(R) \times \pi_A(R) \to \mathbb{R}$, defined  
+for pairs of elements from the active domain $\pi_A(R)$and according to the formal mathmatical definition of a metric, a clustering in terms of a 
+partitioning of the active domain into disjunctive subsets can be obtained by evaluating the similarities and assigning the elements to the clusters in
+a such way that the pairwise intracluster similarity is always at least as big as the pairwise intercluster similarity. This means that any element has 
+a higher similarity to elements of the same cluster than compared to elements from other clusters, thus, a cluster describes rather similar elements. 
+An appropriate criterion for determining how "similar" two elements have to be to belong to the same cluster is required and can be defined as a threshold
+parameter $\alpha$ and a \emph{head} element representing the cluster that enforce a minimal intracluster similarity \cite{Gonzales1985}. Under this
+restriction, for any element $a$ of a cluster, the corresponding $head$ element of this cluster and a given threshold $\alpha$ holds that 
+$sim(a,head) \geq \alpha$. The behavior of the clustering procedure when scaling the threshold parameter is analyzed in Section. \todo[inline]{Ref alpha scaling}
+
+The different clusters contained in the clustering can be used to obtain a horizontal fragmentation of a relation by partitioning the relation along the 
+disjunctive subsets of elements from the active domain with respect to the relaxation attribute. Each cluster corresponds to one horizontal fragment where
+the tuples are mapped to a fragment based on the membership of the relaxation attribute's value in the tuple to the subset of elements in a cluster. 
+
+\begin{exmp}
+\label{sec:meth_cbfr_exmp}
+Consider the clustering $C=\{c_1, c_2, c_3\}$ where $c_1=\{"Car","Bus","Truck"\}$, $c_2=\{"Ferry","Row boat","Speedboat"\}$ and $c_3=\{"Airplane", 
+"Glider","Helicopter"\}$. The clustering obviously clusters a set of vehicle describing terms according to the categories of their area of usage, which 
+are land, sea and air, respectively, which indicates that different aircrafts are more similar than for example a boat and an airplane are. To this
+clustering, consider the relation $Products$ with the relaxation attribute $Category$ as shown in Table~\ref{tab:cbfr_products}.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        Name & Category & Price \\
+        \hline
+        XFast & Car & 50.000€ \\
+        Rowy & Row boat & 999€ \\
+        UFO-9 & Airplane & 100.000.000€ \\
+        \vdots & \vdots & \vdots \\
+        \hline
+    \end{tabular}
+    \caption{Relation $Products$ describing different vehicles that are sold by a company}
+    \label{tab:cbfr_products}
+\end{table}
+
+The clustering-based, horizontal fragmentation of the relation $Products$ consists of three fragments, $F_1$, $F_2$ and $F_3$, where fragment $F_i$
+includes all the tuples from the relation $Products$ that are categorized by a term that belongs to the cluster $c_i$, i.e. the first fragment contains
+the tuple of the car named "XFast", the second fragment contains the tuple of the row boat named "Rowy", etc., as illustrated by
+Table~\ref{tab:cbfr_frags}.
+
+\begin{table}[h]
+    \hspace*{\fill}
+    \begin{tabular}{|c|c|c|}
+        \hline
+        Name & Cat. & Price \\
+        \hline
+        XFast & Car & 50k€ \\
+        \vdots & \vdots & \vdots \\
+        \hline
+    \end{tabular}
+    \hfill
+    \begin{tabular}{|c|c|c|}
+        \hline
+        Name & Cat. & Price\\
+        \hline
+        Rowy & Row boat & 999€ \\
+        \vdots & \vdots & \vdots \\
+        \hline
+    \end{tabular}
+    \hfill
+    \begin{tabular}{|c|c|c|}
+        \hline
+        Name & Cat. & Price\\
+        \hline
+        UFO-9 & Airplane & 100B€ \\
+        \vdots & \vdots & \vdots \\
+        \hline
+    \end{tabular}
+    \hspace*{\fill}
+    \caption{Clustering-based, horizontal fragments fragments $F_1$, $F_2$ and $F_3$ (from left to right) of relation $Products$ 
+            (Table~\ref{tab:cbfr_products})}
+    \label{tab:cbfr_frags}
+\end{table}
+
+\end{exmp}
+
+
+
+The formal definition can be found in \cite{Wiese2014}.
+
+
+
+
+
+\begin{definition}
+Given the active domain $\pi_A(R)$ regarding a relaxation attribute $A$ of a relation instance $R$, a clustering $C=\{c_i|\}$
+\end{definition}
+
+
 \subsection{Similarity-based Query Answering}
 \label{sec:meth_sbqa}
+
+
+\subsection{Flexible Query Answering}
+\label{sec:meth_fqa}

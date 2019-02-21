@@ -51,7 +51,7 @@ complexity, and administration difficulty" \cite[p.~608, l.13--14]{Ramakrish2000
 In \citet[p.~608f.]{Ramakrish2000} the three architecture approaches, \emph{Client-Server}, \emph{Collaborating Server} and \emph{Middleware}, are 
 discussed. The first, really popular architectural model is characterized by a distinction between client and server processes resulting in a separation of
 functionality, i.e. servers are responsible for data storage and management whereas clients provide user interfaces to query data from a server. In a
-Colloborating Server system, in contrast, all servers are able to decompose received queries that concern data from multiple servers to subqueries. The
+Collaborating Server system, in contrast, all servers are able to decompose received queries that concern data from multiple servers to subqueries. The
 subqueries are then executed accordingly at the servers on their locally stored data and a result is computed from all the servers' answers. This is also
 described in Section~\ref{sec:theo_dqp}. In Middleware systems the task of query management and decomposition is handled by a single server and all other
 servers only need to perform queries against their local data.
@@ -99,14 +99,16 @@ of fragmentation strategy.
 \begin{exmp} \label{sec:theo_ddb_exmp}
 $ $\newline
     \begin{center}
-    \begin{tabular}{c|c} 
-         $a$ & $b$\\
-         \hline
-         0 & x \\
-         1 & x \\
-         2 & y \\
-         3 & z \\
-         7 & g \\
+    \begin{tabular}{|c|c|} 
+        \hline
+        $a$ & $b$ \\
+        \hline
+        0 & x \\
+        1 & x \\
+        2 & y \\
+        3 & z \\
+        7 & g \\
+        \hline
     \end{tabular}
     \captionof{table}{Relation $R$ with primary key $a$ and attribute $b$ (foreign key on $S.b$; see Table~\ref{tab:s})}
     \label{tab:r}
@@ -125,25 +127,30 @@ of the original relation, the three fragmentation correctness rules \cite[p.~103
 
 \begin{table}[h]
     \hspace*{\fill}
-    \begin{tabular}{c|c}
+    \begin{tabular}{|c|c|}
+        \hline
         $a$ & $b$\\
         \hline
         0 & x \\
-        1 & x
+        1 & x \\
+        \hline
     \end{tabular}
     \hfill
-    \begin{tabular}{c|c}
+    \begin{tabular}{|c|c|}
+        \hline
         $a$ & $b$\\
         \hline
         2 & y \\
-        3 & z
+        3 & z \\
+        \hline
     \end{tabular}
     \hfill
-    \begin{tabular}{c|c}
+    \begin{tabular}{|c|c|}
+        \hline
         $a$ & $b$\\
         \hline
         7 & g \\
-         & 
+        \hline
     \end{tabular}
     \hspace*{\fill}
     \caption{Horizontal fragments $F_1$, $F_2$ and $F_3$ (from left to right)}
@@ -159,30 +166,37 @@ $G_1=\{(x,0.5)\}$, $G_2=\{(y, 0.3)\}$ and $G_3=\{(g, 9.9)\}$ (Table~\ref{tab:s})
 \begin{table}[h]
     \hspace*{\fill}
     \begin{center}
-    \begin{tabular}{c|c}
+    \begin{tabular}{|c|c|}
+        \hline
         $b$ & $c$\\
         \hline
         x & 0.5 \\
         y & 0.3 \\
-        g & 9.9
+        g & 9.9 \\
+        \hline
     \end{tabular}
     \hspace{20pt}
-    \begin{tabular}{c|c}
+    \begin{tabular}{|c|c|}
+        \hline
         $b$ & $c$\\
         \hline
         x & 0.5
     \end{tabular}
     \hspace{5pt}
-    \begin{tabular}{c|c}
+    \begin{tabular}{|c|c|}
+        \hline
         $b$ & $c$\\
         \hline
-        y & 0.3
+        y & 0.3 \\
+        \hline
     \end{tabular}
     \hspace{5pt}
-    \begin{tabular}{c|c}
-        $b$ & $c$\\
+    \begin{tabular}{|c|c|}
         \hline
-        g & 9.9
+        $b$ & $c$ \\
+        \hline
+        g & 9.9 \\
+        \hline
     \end{tabular}
     \caption{Relation $S$ with attributes $b$ and $c$ (leftmost), derived fragments $G_1$, $G_2$ and $G_3$}
     \label{tab:s}
@@ -201,7 +215,8 @@ vertical fragments contains the attribute a, which is, in this case, a unique id
 
 \begin{table}[h]
     \centering
-    \begin{tabular}{c|c|c}
+    \begin{tabular}{|c|c|c|}
+        \hline
         $a$ & $b$ & $c$ \\
         \hline
         0 & x & 0.5 \\
@@ -209,9 +224,11 @@ vertical fragments contains the attribute a, which is, in this case, a unique id
         2 & y & 0.3 \\
         3 & z & null \\
         7 & g & 9.9 \\
+        \hline
     \end{tabular}
-    \hspace{20pt}
-    \begin{tabular}{c|c}
+    \hspace{30pt}
+    \begin{tabular}{|c|c|}
+        \hline
         $a$ & $b$ \\
         \hline
         0 & x \\
@@ -219,9 +236,11 @@ vertical fragments contains the attribute a, which is, in this case, a unique id
         2 & y \\
         3 & z \\
         7 & g \\
+        \hline
     \end{tabular}
-    \hspace{5pt}
-    \begin{tabular}{c|c}
+    \hspace{10pt}
+    \begin{tabular}{|c|c|}
+        \hline
         $a$ & $c$ \\
         \hline
         0 & 0.5 \\
@@ -229,6 +248,7 @@ vertical fragments contains the attribute a, which is, in this case, a unique id
         2 & 0.3 \\
         3 & null \\
         7 & 9.9 \\
+        \hline
     \end{tabular}
     \caption{$R~{\tiny \textifsym{d|><|}}~S$, vertical fragments $H_1$ and $H_2$}
     \label{tab:join_vert_frag}
@@ -298,40 +318,42 @@ relation $R$ and another server holds all the tuples of relation $S$ as shown in
 
 
 \begin{figure}[h]
-\framebox[\textwidth]{
-    Servers
-    \hspace*{1cm}
-    \framebox[1.1\width]{
-        $S_1$
-        \hspace{0.5cm}
-        \begin{tabular}{c|c} 
-             $a$ & $b$\\
-             \hline
-             0 & x \\
-             1 & x \\
-             2 & y \\
-             3 & z \\
-             7 & g \\
-        \end{tabular}
+    \centering
+    \framebox[0.8\textwidth]{
+        Servers
+        \hspace*{1cm}
+        \framebox[1.2\width]{
+            $S_1$
+            \hspace{0.5cm}
+            \begin{tabular}{|c|c|} 
+                \hline
+                $a$ & $b$\\
+                \hline
+                0 & x \\
+                1 & x \\
+                2 & y \\
+                3 & z \\
+                7 & g \\
+                \hline
+            \end{tabular}
+        }
         
+        \hspace*{1cm}
         
+        \framebox[1.2\width]{
+            $S_2$
+            \hspace{0.5cm}
+            \begin{tabular}{|c|c|}
+                \hline
+                $b$ & $c$\\
+                \hline
+                x & 0.5 \\
+                y & 0.3 \\
+                g & 9.9 \\
+                \hline
+            \end{tabular}
+        }
     }
-    
-    \hspace*{1cm}
-    
-    \framebox[1.1\width]{
-        $S_2$
-        \hspace{0.5cm}
-        \begin{tabular}{c|c}
-            $b$ & $c$\\
-            \hline
-            x & 0.5 \\
-            y & 0.3 \\
-            g & 9.9
-        \end{tabular}
-    }
-    
-}
 \caption{Distribution of relations $R$ (Table~\ref{tab:r}) and $S$ (Table~\ref{tab:s}) to two servers}
 \label{fig:dqp_rs_simple}
 \end{figure}
