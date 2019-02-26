@@ -137,7 +137,7 @@ a similarity metric which allows for a more semantic partitioning of the data se
 answering} (cf. Section~\ref{sec:meth_sbqa}), and the, for example in case of a query failure, desired \emph{flexible query answering} 
 (cf. Section~\ref{sec:meth_fqa}). The underlying clustering is computed based on an approximation algorithm \citep{Gonzales1985} with respect to all 
 values that can occur for a chosen \emph{relaxation attribute} of the relation, the \emph{active domain} as defined in the following (according to
-Definition 2 in \cite{Wiese2014}).
+Definition 2 in \cite{Wiese2014}). The pseudocode of the clustering procedure is described in Listing~2 in \cite{Wiese2014}.
 
 \begin{definition}
 Given a relaxation attribute $A$ and a relation instance $R$ (set of tuples), let $\pi_A(R)$ denote the \emph{active domain} of the relaxation attribute
@@ -145,25 +145,48 @@ $A$ of the relation $R$.
 \end{definition}
 
 With the chosen relaxation attribute $A$ of a relation $R$ and a pairwise similarity $sim(a, b)$, $\pi_A(R) \times \pi_A(R) \to \mathbb{R}$, defined  
-for pairs of elements from the active domain $\pi_A(R)$and according to the formal mathmatical definition of a metric, a clustering in terms of a 
+for pairs of elements from the active domain $\pi_A(R)$ and according to the formal mathmatical definition of a metric, a clustering in terms of a 
 partitioning of the active domain into disjunctive subsets can be obtained by evaluating the similarities and assigning the elements to the clusters in
 a such way that the pairwise intracluster similarity is always at least as big as the pairwise intercluster similarity. This means that any element has 
 a higher similarity to elements of the same cluster than compared to elements from other clusters, thus, a cluster describes rather similar elements. 
 An appropriate criterion for determining how "similar" two elements have to be to belong to the same cluster is required and can be defined as a threshold
 parameter $\alpha$ and a \emph{head} element representing the cluster that enforce a minimal intracluster similarity \cite{Gonzales1985}. Under this
 restriction, for any element $a$ of a cluster, the corresponding $head$ element of this cluster and a given threshold $\alpha$ holds that 
-$sim(a,head) \geq \alpha$. The behavior of the clustering procedure when scaling the threshold parameter is analyzed in Section. \todo[inline]{Ref alpha scaling}
+$sim(a,head) \geq \alpha$. 
+
 
 The different clusters contained in the clustering can be used to obtain a horizontal fragmentation of a relation by partitioning the relation along the 
 disjunctive subsets of elements from the active domain with respect to the relaxation attribute. Each cluster corresponds to one horizontal fragment where
-the tuples are mapped to a fragment based on the membership of the relaxation attribute's value in the tuple to the subset of elements in a cluster. 
+the tuples are mapped to a fragment based on the membership of the relaxation attribute's value in the tuple to the subset of elements in a cluster. This 
+can be defined as follows (cf. \cite[Definition~2]{Wiese2014}):
+
+\begin{definition} \label{def:cbfr}
+Given the active domain $\pi_A(R)$ regarding a relaxation attribute $A$ of a relation instance $R$, and a complete clustering $C=\{c_i|i=1,...,n\}$
+of $\pi_A(R)$ with threshold $\alpha$ and head elements $head_i \in c_i$ for the clustering. Then, $F=\{R_1,...,R_n\}$ is a (horizontal) 
+\emph{clustering-based fragmentation} of $R$ if
+\begin{itemize}
+    \item every horizontal fragment $F_i$ corresponds to one cluster $c_i \in C$ such that $c_i=\pi_A(F_i)$
+    \item $\forall i \in \{1,...,n\}: \forall a \in c_i: sim(a, head_i)>=\alpha$
+    \item the fragmentation $F$ is correct (\cite[p.~103]{Ozsu1991})
+\end{itemize}
+\end{definition}
+
+The completeness for the clustering, that is required in Definition~\ref{def:cbfr} and in Definition~2 in \cite{Wiese2014},
+provides coverage for all elements of the active domain $\pi_A(R)$ regarding the relaxation attribute $A$. Furthermore, the mapping of any element of the
+active domain to one of the clusters is functional which makes the clusters pairwise disjoint, hence, all the by the clustering induced fragments are also
+disjoint and non-redundant as each tuple is assigned to only fragment according to its relaxation attribute's maximum similarity to one of the clusters.
+Thus, the relation instance $R$ can be reconstructed from the horizontal fragments with its localization program. Covering these three aspects, the
+obtained fragmentation is a correct fragmentation \cite[p.~103]{Ozsu1991}. The following example illustrates the clustering-based fragmentation without
+concerning a concrete similarity in terms of a metric but with a intuitive idea of similarity. The behavior of the clustering procedure when scaling the
+threshold parameter is analyzed in Section. \todo[inline]{Ref alpha scaling}
 
 \begin{exmp}
 \label{sec:meth_cbfr_exmp}
-Consider the clustering $C=\{c_1, c_2, c_3\}$ where $c_1=\{"Car","Bus","Truck"\}$, $c_2=\{"Ferry","Row boat","Speedboat"\}$ and $c_3=\{"Airplane", 
-"Glider","Helicopter"\}$. The clustering obviously clusters a set of vehicle describing terms according to the categories of their area of usage, which 
-are land, sea and air, respectively, which indicates that different aircrafts are more similar than for example a boat and an airplane are. To this
-clustering, consider the relation $Products$ with the relaxation attribute $Category$ as shown in Table~\ref{tab:cbfr_products}.
+Consider the clustering $C=\{c_1, c_2, c_3\}$ with three clusters $c_1$,$c_2$ and $c_3$, where $c_1=\{"Car","Bus","Truck"\}$, 
+$c_2=\{"Ferry","Row~boat","Speedboat"\}$ and $c_3=\{"Airplane","Glider","Helicopter"\}$. The clustering obviously clusters a set of vehicle describing 
+terms according to the categories of their area of usage, which are land, sea and air, respectively. The clustering indicates that different aircrafts 
+are more similar than for example a boat and an airplane are. In addition to this clustering, consider the relation $Products$ with the relaxation
+attribute $Category$ as shown in Table~\ref{tab:cbfr_products}.
 
 \begin{table}[h]
     \centering
@@ -182,9 +205,9 @@ clustering, consider the relation $Products$ with the relaxation attribute $Cate
 \end{table}
 
 The clustering-based, horizontal fragmentation of the relation $Products$ consists of three fragments, $F_1$, $F_2$ and $F_3$, where fragment $F_i$
-includes all the tuples from the relation $Products$ that are categorized by a term that belongs to the cluster $c_i$, i.e. the first fragment contains
-the tuple of the car named "XFast", the second fragment contains the tuple of the row boat named "Rowy", etc., as illustrated by
-Table~\ref{tab:cbfr_frags}.
+includes all the tuples from the relation $Products$ that are categorized by a term that belongs to the cluster $c_i$ (cf. Definition~\ref{def:cbfr}), 
+i.e. the first fragment contains the tuple of the car named "XFast", the second fragment contains the tuple of the row boat named "Rowy", etc., as
+illustrated by Table~\ref{tab:cbfr_frags}.
 
 \begin{table}[h]
     \hspace*{\fill}
@@ -210,7 +233,7 @@ Table~\ref{tab:cbfr_frags}.
         \hline
         Name & Cat. & Price\\
         \hline
-        UFO-9 & Airplane & 100B€ \\
+        UFO-9 & Airplane & 100M€ \\
         \vdots & \vdots & \vdots \\
         \hline
     \end{tabular}
@@ -222,22 +245,30 @@ Table~\ref{tab:cbfr_frags}.
 
 \end{exmp}
 
-
-
-The formal definition can be found in \cite{Wiese2014}.
-
-
-
-
-
-\begin{definition}
-Given the active domain $\pi_A(R)$ regarding a relaxation attribute $A$ of a relation instance $R$, a clustering $C=\{c_i|\}$
-\end{definition}
+As the clustering-based fragmentation is a primary horizontal fragmentation, it is also possible and efficient to derive another horizontal fragmentation
+from it in the same way as already discussed in Section~\ref{sec:theo_ddb_frag}. This is the collocation of the data that first of all assigns all tuples
+of the primary relation to fragments according to the cluster (cf. Example~\ref{sec:meth_cbfr_exmp}), and then collocates tuples of the other relations to
+the corresponding derived, horizontal fragments.
 
 
 \subsection{Similarity-based Query Answering}
 \label{sec:meth_sbqa}
 
+A DDBS that uses a clustering-based fragmentation and derived fragmentations -- as described above -- is capable of answering queries regarding the 
+similarity defined for the relaxation attribute underlying the clustering.
+
+
 
 \subsection{Flexible Query Answering}
 \label{sec:meth_fqa}
+
+As already mentioned in the introduction, failing queries, that have an empty result set, are only desirable for a user in the fewest cases as an empty
+result cannot provide any information except the information that this certain query could not be answered exactly under the current database state. For
+example, consider a database that stores logs of a running application in different relations according to common log levels, e.g. "WARN", "INFO" and
+"ERROR". If a query that asks for all the logs that are labelled as errors is stated against this log database, an empty result would be satisfying for a
+software engineer involved in the development or maintenance of the application as the information induced by the empty answer means that no unwanted 
+errors occurred. But in most of the cases, a failing query forces the user to check whether the query contains some logical error itself leading to
+no exact answers, or whether the current database state does actually not provide any matching data. Both of the points are not always easy to check as the
+initially stated query can be really complex. Nevertheless, in case of the second criterion, the database would probably be able to give an answer that
+has an information content that is \emph{similar} to exact answer and non-empty. Therefore, the user could already be satisfied with a similar answer as 
+this similarity can already enable to gain information and draw conclusions. Another example 

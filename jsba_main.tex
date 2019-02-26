@@ -61,18 +61,22 @@
 \newpage
 \input{jsba_stmt.tex}
 
-% Table of contents & list of tables/figures
+% Table of contents 
 \newpage
+\pagestyle{empty}
+\addtocontents{toc}{\protect\thispagestyle{empty}}  % to remove page numbering if the toc has 2+ pages
 \tableofcontents
-\thispagestyle{empty}
+
+% List of tables/figures (have a page number!)
 \newpage
+\pagestyle{headings}
+\pagenumbering{arabic}
+\setcounter{page}{1}
 \listoffigures
 \listoftables
 
 
 % Introduction
-\pagenumbering{arabic}
-\setcounter{page}{1}
 \newpage
 \input{jsba_intro}
 

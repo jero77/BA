@@ -100,12 +100,19 @@ For this, the developed platform will incorporate a "virtual oncology center" (V
 decision making regarding cancer diseases by a functional infrastructure. This part of the platform aims to utilize shared data about courses of
 treatment of patients and historical data from studies, which are provided from different participating sources, with applications built on this platform.
 By doing so, the applications support the identification of similar cases for selected patients in order to help to decide for an appropriatly tailored
-treatment and to be able to draw conclusions regarding the disease progression. The used similarity measures enabling the search for similar patients,
+treatment and to be able to draw conclusions regarding the disease progression. The used similarity measures that enable the search for similar patients,
 whose pathologies and treatments lead to inference of useful knowledge for the decision making, depend on machine learning and ontologies. The latter ones
 also form the core part for the tool of the \citetalias{UMLS::Sim} module, developed by \cite{McInnes2009}, which will be used later in the underlying
-implementation of the distributed database system to calculate similarities between disease terms according to the Medical Subject Headings taxonomy that 
-are required for the clustering-based fragmentation as well as the similarity-based query answering.
+implementation of the distributed database system to calculate similarities between disease terms according to the Medical Subject Headings taxonomy 
+(see \citetalias{MeSH}) that are required for the clustering-based fragmentation as well as the similarity-based query answering.
 
 
+In the following section there will be given a theoretical introduction about distributed database systems in general with the underlying distribution 
+concepts of data replication and fragmentation and about the distributed query processing that plays a big role in a distributed database. 
+Section~\ref{sec:meth} describes the methods that are used to implement a medical information system that is built with the help of an in-memory database
+system and distributes the data according to a clustering-based fragmentation which enables for similarity-based and flexible query answering.
+Section~\ref{sec:impl} encompasses the technical details and conditions of the implementation of the system, namely two alternative implementations and
+a reference implementation, the clustering procedure and (flexible) query answering and rewriting. Based on this implementation, Section~\ref{sec:res}
+illustrates and evaluates the results of query executions with the system in the different implementation alternatives.
 
-\todo[inline]{Summarize content of the following sections \dots}
+\todo[inline]{Summarize content of the missing sections \dots}
