@@ -255,8 +255,37 @@ the corresponding derived, horizontal fragments.
 \label{sec:meth_sbqa}
 
 A DDBS that uses a clustering-based fragmentation and derived fragmentations -- as described above -- is capable of answering queries regarding the 
-similarity defined for the relaxation attribute underlying the clustering.
+similarity defined for the relaxation attribute underlying the clustering. This means that, for certain queries, the system is able to utilize the 
+similarity metric in order to determine the relevant fragments to obtain an answer to the given query. As the data is distributed along the clustering to
+the horizontal fragments of the fragmented relation, the query execution can also be distributed according to the clustering to be executed as close as
+possible to the location of the data, i.e. in the best case it is sufficient to execute the query only locally without any data transfer at a single 
+server which hosts the single relevant data fragment. Finding the appropriate fragment depends on whether the query contains at least one selection
+condition on the relaxation attribute of the clustering. If so, the corresponding fragment can be identified by evaluating the similarity of the element
+from the active domain, to which the relaxation attribute is compared, to the head elements of the different clusters. The maximal similarity of the 
+comparison element and all cluster heads determines the matching cluster as well as the induced horizontal fragment. 
 
+\begin{exmp}
+\label{sec:meth_sbqa_exmp}
+Consider again the clustering-based fragmentation of the relation $Products$ as introduced in Example~\ref{sec:meth_cbfr_exmp} and an assignment of the 
+fragments $F_1$, $F_2$ and $F_3$ to three different servers, $S_1$, $S_2$ and $S_3$, respectively (cf. Table~\ref{tab:cbfr_frags}). Assume that a potential
+customer of the company is interested in purchasing an airplane and queries the database, for instance via an interface on the web page of the company, 
+for all vehicles matching his interest. The query could be
+\begin{verbatim}
+    SELECT Name, Price FROM Products WHERE Category = 'Airplane'
+\end{verbatim}
+and could be answered in an efficient way by using similarity-based query answering to restrict the query execution such that the query is only sent to 
+one server which is responsible for the aircraft-vehicles-fragment of the $Products$ relation and executed locally on this server. Hence, only server 
+$S_3$
+
+Without this optimization, the query would have to be processed and executed by all servers that store a fragment of the $Products$ relation. However, 
+all servers except the server hosting the required fragment will return an empty answer as they have no matching tuples in any of their fragments. But 
+this still means that even if there are no matching tuples at a server because it does not host the relevant fragment, the pure query answering, i.e.
+without an intelligent, similiarity-based answering and optimization, entails that all tuples of fragments of the relation $Products$ have to be checked.
+As scanning all potential answer tuples obviously scales with the size of the relation and the fragments, the execution of the query will be less 
+efficient when the data set grows big.
+\end{exmp}
+
+\todo[inline]{Maybe some more content here...?}
 
 
 \subsection{Flexible Query Answering}
@@ -265,10 +294,16 @@ similarity defined for the relaxation attribute underlying the clustering.
 As already mentioned in the introduction, failing queries, that have an empty result set, are only desirable for a user in the fewest cases as an empty
 result cannot provide any information except the information that this certain query could not be answered exactly under the current database state. For
 example, consider a database that stores logs of a running application in different relations according to common log levels, e.g. "WARN", "INFO" and
-"ERROR". If a query that asks for all the logs that are labelled as errors is stated against this log database, an empty result would be satisfying for a
-software engineer involved in the development or maintenance of the application as the information induced by the empty answer means that no unwanted 
-errors occurred. But in most of the cases, a failing query forces the user to check whether the query contains some logical error itself leading to
-no exact answers, or whether the current database state does actually not provide any matching data. Both of the points are not always easy to check as the
-initially stated query can be really complex. Nevertheless, in case of the second criterion, the database would probably be able to give an answer that
-has an information content that is \emph{similar} to exact answer and non-empty. Therefore, the user could already be satisfied with a similar answer as 
-this similarity can already enable to gain information and draw conclusions. Another example 
+"ERROR". If a query asking for all the logs that are labelled as errors is stated against this log database, an empty result would be satisfying, for 
+instance, for a software engineer, who is involved in the development or maintenance of the application, as the information induced by the empty answer 
+means that no unwanted errors occurred. But in most of the cases, a failing query forces the user to check whether the query contains some logical error
+itself leading to no exact answers, or whether the current database state does actually not provide any matching data. Both of the points are not always
+easy to check as the initially stated query can be really complex. Nevertheless, in case of the second criterion, the database would probably be able to
+give an answer that has an informational content that is \emph{similar} to an exact answer and, in contrast to the exact answer, non-empty. Therefore, the
+user could already be satisfied with a similar answer as this similarity can already enable the user to gain information and draw conclusions based on this
+similar answer.
+
+\begin{exmp}
+\label{sec:meth_fqa_exmp}
+
+\end{exmp}
