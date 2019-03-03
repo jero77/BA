@@ -302,8 +302,94 @@ easy to check as the initially stated query can be really complex. Nevertheless,
 give an answer that has an informational content that is \emph{similar} to an exact answer and, in contrast to the exact answer, non-empty. Therefore, the
 user could already be satisfied with a similar answer as this similarity can already enable the user to gain information and draw conclusions based on this
 similar answer.
+\todo[inline]{Maybe again highmed oncology use case}
+\todo[inline]{Generalization, Anti-Instantiation, etc.}
+
+\subsubsection{Query Generalization}
+In general, queries can be answered flexibly by \emph{deductive generalization} \citep{Gaasterland1992, Wiese2014} that expresses that in first-order logic
+(FOL) a formula $\Psi(X,Y)$ over the free variables contained in vectors $X$ and $Y$, where $X$ and $Y$ contain only different free variables, deductively
+generalizes the formula $\Phi(X)$ if for a given knowledge base $\Sigma$ holds that $\Sigma \vDash \forall X \exists Y (\Phi(X) \to \Psi(X,Y))$ 
+(cf. Definition~1 in \cite{Wiese2014}). In a special case, a knowledge base can be a relational (distributed) database that describes a logical language by
+its relations as the predicate symbols, a domain of all constant symbols which occur in the table columns and a set of variables to express queries 
+(cf. \cite{Wiese2014}). For instance, the relation $Products$ from the previous examples would be represented by the predicate symbol $Products(x,y,z)$
+and the query from Example~\ref{sec:meth_sbqa_exmp} could be expressed as the logical formula $Q(N,P)=Products(N,P,"Airplane")$, that binds the free 
+variables $N$ and $P$ to name and price, respectively, of all tuples in the database that have the category airplane. 
+
+\subsubsection{Anti-Instantiation}
+One common generalization operator is the \emph{anti-instantiation} operator \citep{Wiese2014} that deducts a more general formula by substituting a
+constant symbol with a variable or by substituting an at least twice occuring variable by a new variable. For example, the query formula $Q(N,P)$ would 
+be anti-instantiated by replacing the constant symbol $"Airplane"$ by a new variable $Z$ which results in the more general query
+$Q'(N,P,Z)=Products(N,P,Z)$ (or also possibly $Z$ bound by an existential quantifier). Obviously, every variable binding that satisfies the less general
+formula $Q(N,P)$ also satisfies the more general one, thus, $Q'(N,P,Z)$ is a deductive generalization of $Q(N,P)$. In terms of SQL, the anti-instantiated
+formula is equal to the SQL query 
+\begin{verbatim}
+   SELECT * FROM Products 
+\end{verbatim}
+where again every tuple satisfying the less general SQL query also occurs in the result set of the more general query. However, the application of this
+generalization operator can cause a so-called \emph{overgeneralization} \citep{Wiese2014} that -- regarding queries and query answering -- results in 
+too general answers which are not closely related to the intended answers anymore and so may not be informative at all. This is also indicated by the
+just examined query and its generalization which returns all tuples of the relation $Products$ although most of the information about a vehicle is not
+similar to the desired information about airplanes. Instead, more semantics can be added in an intelligent combination of deductive generalization in form
+of anti-instantiation with the clustering-based fragmentation in order to obtain more general queries that are based on the underlying similarity metric
+for the clustering. This can be achieved by replacing a constant symbol from the relaxation attribute's domain by a new free variable that is resricted to
+only the values that belong to the same cluster to which the constant symbol belongs to. In FOL this can be expressed by a disjunction that covers all the
+possible constant symbols of the cluster, e.g. $Q'(N,P,Z)=Products(N,P,Z) \land (Z="Airplane" \lor Z="Glider" \lor Z="Helicopter")$. This query is also
+more general but it contains a more intelligent selection of not all vehicles but only the ones that are similar to airplanes as they can also fly. The
+following example also shows how the anti-instantiation can be realized in SQL with an underlying clustering-based fragmentation providing the ability
+to answer queries flexible and similarity-based resulting in reasonable and informative answers that are not too general as a semantic guidance 
+\citep{Wiese2014} avoids overgeneralization.
 
 \begin{exmp}
 \label{sec:meth_fqa_exmp}
+Again, let the subject of this example be the relation $Products$ and the underlying clustering-based fragmentation on the relaxation attribute $Category$
+as in Examples~\ref{sec:meth_cbfr_exmp} and \ref{sec:meth_sbqa_exmp}. Consider also the situtation where another prospect who this time is interested in 
+purchasing a helicopter instead of an airplane states a corresponding query like
+\begin{verbatim}
+    SELECT Name, Price FROM Products WHERE Category = 'Helicopter'
+\end{verbatim}
+against the database. This query will fail if the $Products$ relation contains no vehicle tuple which satisfies the condition \verb!Category='Helicopter'!
+in the current database state because the company does not produce and sell helicopters currently. With the given clustering of the relaxation attribute,
+the query could be rewritten and generalized to provide similar answers based on the similarity of other aircrafts to the initially queried helicopters.
+There are multiple ways to rewrite the query to achieve this generalization but all extend the query such that it is fulfilled by all tuples that match the
+contained selection condition on the category of the vehicle with any aircraft representing term:
+
+\begin{itemize}
+    \item \begin{verbatim}
+    SELECT Name, Price
+    FROM Products 
+    WHERE Category IN ('Helicopter', 'Airplane', 'Glider')
+    \end{verbatim}
+    
+    \item \begin{verbatim}
+    SELECT Name, Price 
+    FROM Products 
+    WHERE Category = 'Helicopter' 
+        OR Category = 'Airplane' 
+        OR Category = 'Glider'
+    \end{verbatim}
+
+    \item \begin{verbatim}
+    (SELECT Name, Price FROM Products WHERE Category = 'Helicopter')
+    UNION 
+    (SELECT Name, Price FROM Products WHERE Category = 'Airplane')
+    UNION 
+    (SELECT Name, Price FROM Products WHERE Category = 'Glider')
+    \end{verbatim}
+\end{itemize}
+
+All three queries produce the same result set which, on the contrary, can contain some at least similar information compared to the initially failing,
+non-generalized query. Besides this query generalization in order to return all available data about aircrafts, the user's interest to buy an aircraft of
+another category which is actually sold might be aroused when getting the information about this similar alternatives which might be beneficial for the
+company. 
+
+Indeed, flexible query answering that is based on some semantic guidance, like the clustering based on the similarity defined for disease representing 
+MeSH terms, can be really helpful when considering the search for similar patient profiles for decision making regarding the treatment options and for 
+predictions for the patient's future (cf. oncology use case in \cite{Haarbrandt2018}). The data of identified similar patients can be used to compare the
+current situation of the patient as well as probabilities of success or failure of treatments. The higher the similarity is to other patients, the higher 
+is also chance for an optimal treatment of the cancer disease, especially early detection and methods of prevention could be enabled. But as the 
+similarity crosses some arbitrary threshold, also the informational content that can be derived and concluded will not be as useful anymore.
+However the reliable identification of similar cases, for example for cancer diseases, requires way more complex semantic similarity measures in order 
+to identify helpful profiles and information that can not be handled by simple query generalization but allow for ranking similar cases based on the
+similarity measures \citep{Haarbrandt2018}.
 
 \end{exmp}
