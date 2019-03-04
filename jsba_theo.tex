@@ -79,8 +79,8 @@ $S$ can be \emph{derived} by computing the semi-join of the relation $S$ with fr
 The \emph{derived horizontal fragmentation} depends on the underlying primary horizontal fragmentation, and, to prevent tuples in $S$ from getting lost
 during the semi-join with fragments of $R$, it is necessary to have for each tuple $y\in S$ matching tuples in $R$ in order to let the tuples from $S$ 
 "survive" the semi-join. An integrity constraint in form of a foreign key reference of the relation $S$ to the relation $R$ can be used to enforce this
-condition for the sake of completeness of the derived fragmentation. Though with the definition of the derived horizontal fragmentation on a semi-join,
-inherently replication of tuples of $S$ in the derived fragments may occur if tuples in $S$ match multiple tuples that belong to different fragments of 
+condition for the sake of completeness of the derived fragmentation. Inherently with the definition of the derived horizontal fragmentation on a semi-join,
+replication of tuples of $S$ in the derived fragments may occur if tuples in $S$ match multiple tuples that belong to different fragments of 
 $R$ \cite[p.~121]{Ozsu1991}. This causes the fragments $G_i$ of $S$ not to be disjoint in general which is equal to a partial replication as described 
 in Section~\ref{sec:theo_ddb_repl}.
 
@@ -180,7 +180,8 @@ $G_1=\{(x,0.5)\}$, $G_2=\{(y, 0.3)\}$ and $G_3=\{(g, 9.9)\}$ (Table~\ref{tab:s})
         \hline
         $b$ & $c$\\
         \hline
-        x & 0.5
+        x & 0.5 \\
+        \hline
     \end{tabular}
     \hspace{5pt}
     \begin{tabular}{|c|c|}

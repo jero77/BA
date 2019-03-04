@@ -4,30 +4,14 @@
 \section{Methods}
 \label{sec:meth}
  
- \begin{enumerate}
-     \item show how your choice of design and research method is suited to answering your research question(s)
-     \item demonstrate that you have given due consideration to the validity and reliability of your chosen method
-     \item by “showing” instead of “telling”, you demonstrate that you have understood the practical meaning of these concepts
-     \item Show the reader what you have done in your study, and explain why. 
-     \begin{enumerate}
-         \item How did you collect the data? 
-         \item Which options became available through your chosen approach?
-         \item What were your working conditions? 
-         \item What considerations did you have to balance?
-     \end{enumerate}
-    \item Tell the reader what you did to increase the validity of your research. 
-    \begin{enumerate}
-        \item E.g., what can you say about the reliability in data collection? 
-        \item How do you know that you have actually investigated what you intended to investigate? 
-        \item What conclusions can be drawn on this basis? 
-        \item Which conclusions are certain and which are more tentative?
-        \item Can your results be applied in other areas? Can you generalise? If so, why? If not, why not?
-    \end{enumerate}
-    \item You should aim to describe weaknesses as well as strengths. An excellent thesis distinguishes itself by defending – and at the same time criticising – the choices made.
- \end{enumerate}
- 
-\todo[inline]{Maybe switch following section to implementation chapter instead of methdods}
-\todo[inline]{Summarize content of this section briefly}
+This section deals with the used methods underlying the implementation of the medical information system (cf. Section~\ref{sec:impl}) and how they fit 
+together. First of all, all relevant features, e.g. partitioning (fragmentation), of the distributed in-memory database technology of \citetalias{Ignite}
+are discussed. Secondly, a horizontal fragmentation strategy, the clustering-based fragmentation, that is based on a clustering of all possible values of 
+an attribute by means of a similarity defined for these values is explained in detail and demonstrated by examples. The third subsection analyzes how query 
+answering can, on the one hand, be improved by intelligent usage of the similarity for query rewriting and, on the other hand, suits the clustering-based
+fragmentation. The last subsection discusses a strategy to answer queries in a flexible manner by generalization of queries via anti-instantiation 
+and sketches how flexible query answering is in line with both clustering-based fragmentation and similarity-based query answering. The technical
+details of how all these methods and techniques match or have to be adapted to the capabilities of the underlying DDBS is subject of Section~\ref{sec:impl}.
 
 \subsection{Apache Ignite}
 \label{sec:meth_ign}
@@ -285,7 +269,12 @@ As scanning all potential answer tuples obviously scales with the size of the re
 efficient when the data set grows big.
 \end{exmp}
 
-\todo[inline]{Maybe some more content here...?}
+The similarity-based query answering will allow for efficient query execution regarding the flexible answering (cf. Section~\ref{sec:meth_fqa_fqsba}), too,
+as it allows for answering in a general but still reasonable and similarity-restricted way. Restrictedness here applies to the generalization of queries in
+order to overcome the lack of answers to a query that is too special with regards to the selection condition on the relaxation attribute but still fits in
+line with some semantical closeness of the returned answers. Furthermore, the intelligent identification of relevant fragments and the servers that store 
+that fragments allows for an optimized resource usage as multiple queries can be executed in parallel when only local data on a certain server matches the
+query while other servers are able to process other queries.
 
 
 \subsection{Flexible Query Answering}
@@ -302,10 +291,9 @@ easy to check as the initially stated query can be really complex. Nevertheless,
 give an answer that has an informational content that is \emph{similar} to an exact answer and, in contrast to the exact answer, non-empty. Therefore, the
 user could already be satisfied with a similar answer as this similarity can already enable the user to gain information and draw conclusions based on this
 similar answer.
-\todo[inline]{Maybe again highmed oncology use case}
-\todo[inline]{Generalization, Anti-Instantiation, etc.}
 
 \subsubsection{Query Generalization}
+\label{sec:meth_fqa_qgen}
 In general, queries can be answered flexibly by \emph{deductive generalization} \citep{Gaasterland1992, Wiese2014} that expresses that in first-order logic
 (FOL) a formula $\Psi(X,Y)$ over the free variables contained in vectors $X$ and $Y$, where $X$ and $Y$ contain only different free variables, deductively
 generalizes the formula $\Phi(X)$ if for a given knowledge base $\Sigma$ holds that $\Sigma \vDash \forall X \exists Y (\Phi(X) \to \Psi(X,Y))$ 
@@ -316,6 +304,7 @@ and the query from Example~\ref{sec:meth_sbqa_exmp} could be expressed as the lo
 variables $N$ and $P$ to name and price, respectively, of all tuples in the database that have the category airplane. 
 
 \subsubsection{Anti-Instantiation}
+\label{sec:meth_fqa_anti}
 One common generalization operator is the \emph{anti-instantiation} operator \citep{Wiese2014} that deducts a more general formula by substituting a
 constant symbol with a variable or by substituting an at least twice occuring variable by a new variable. For example, the query formula $Q(N,P)$ would 
 be anti-instantiated by replacing the constant symbol $"Airplane"$ by a new variable $Z$ which results in the more general query
@@ -327,17 +316,18 @@ formula is equal to the SQL query
 \end{verbatim}
 where again every tuple satisfying the less general SQL query also occurs in the result set of the more general query. However, the application of this
 generalization operator can cause a so-called \emph{overgeneralization} \citep{Wiese2014} that -- regarding queries and query answering -- results in 
-too general answers which are not closely related to the intended answers anymore and so may not be informative at all. This is also indicated by the
-just examined query and its generalization which returns all tuples of the relation $Products$ although most of the information about a vehicle is not
-similar to the desired information about airplanes. Instead, more semantics can be added in an intelligent combination of deductive generalization in form
-of anti-instantiation with the clustering-based fragmentation in order to obtain more general queries that are based on the underlying similarity metric
-for the clustering. This can be achieved by replacing a constant symbol from the relaxation attribute's domain by a new free variable that is resricted to
-only the values that belong to the same cluster to which the constant symbol belongs to. In FOL this can be expressed by a disjunction that covers all the
-possible constant symbols of the cluster, e.g. $Q'(N,P,Z)=Products(N,P,Z) \land (Z="Airplane" \lor Z="Glider" \lor Z="Helicopter")$. This query is also
-more general but it contains a more intelligent selection of not all vehicles but only the ones that are similar to airplanes as they can also fly. The
-following example also shows how the anti-instantiation can be realized in SQL with an underlying clustering-based fragmentation providing the ability
-to answer queries flexible and similarity-based resulting in reasonable and informative answers that are not too general as a semantic guidance 
-\citep{Wiese2014} avoids overgeneralization.
+too general answers which are not closely related to the intended answers anymore and so may not be informative at all. The overgeneralization is caused by
+the purely syntactical definition of the anti-instantiation operator that provides no semantics which would yield some relatedness of the generalized 
+queries \citep{Wiese2014}. This is also indicated by the just examined query and its generalization which returns all tuples of the relation $Products$
+although most of the information about a vehicle is not similar to the desired information about airplanes. Instead, more semantics can be added in an
+intelligent combination of deductive generalization in form of anti-instantiation with the clustering-based fragmentation in order to obtain more general
+queries that are based on the underlying similarity metric for the clustering. This can be achieved by replacing a constant symbol from the relaxation
+attribute's domain by a new free variable that is resricted to only the values that belong to the same cluster to which the constant symbol belongs to. 
+In FOL this can be expressed by a disjunction that covers all the possible constant symbols of the cluster, e.g. $Q'(N,P,Z)=Products(N,P,Z) \land
+(Z="Airplane" \lor Z="Glider" \lor Z="Helicopter")$. This query is also more general but it contains a more intelligent selection of not all vehicles but
+only the ones that are similar to airplanes as they can also fly. The following example also shows how the anti-instantiation can be realized in SQL with 
+an underlying clustering-based fragmentation providing the ability to answer queries flexible and similarity-based resulting in reasonable and informative
+answers that are not too general as a semantic guidance \citep{Wiese2014} avoids overgeneralization.
 
 \begin{exmp}
 \label{sec:meth_fqa_exmp}
@@ -380,8 +370,19 @@ contained selection condition on the category of the vehicle with any aircraft r
 All three queries produce the same result set which, on the contrary, can contain some at least similar information compared to the initially failing,
 non-generalized query. Besides this query generalization in order to return all available data about aircrafts, the user's interest to buy an aircraft of
 another category which is actually sold might be aroused when getting the information about this similar alternatives which might be beneficial for the
-company. 
+company. Also notice the three equivalent SQL expressions of the corresponding, equivalent, disjunctive FOL formulas
+\begin{equation*}
+\exists Z:~Products(N,P,Z)~\land~(Z="Airplane"~\lor~Z="Glider"~\lor~Z="Helicopter") \notag
+\end{equation*}
+\begin{equation}
+    Products(N,P,"Airplane")~\lor~Products(N,P,"Glider")~\lor~Products(N,P,"Helicopter") \notag
+\end{equation}   
 
+with free variables $N$ and $P$ where the first one is according to the first two SQL queries and the second one is according to last SQL query with the 
+union.
+\end{exmp}
+
+$ $\\
 Indeed, flexible query answering that is based on some semantic guidance, like the clustering based on the similarity defined for disease representing 
 MeSH terms, can be really helpful when considering the search for similar patient profiles for decision making regarding the treatment options and for 
 predictions for the patient's future (cf. oncology use case in \cite{Haarbrandt2018}). The data of identified similar patients can be used to compare the
@@ -392,4 +393,60 @@ However the reliable identification of similar cases, for example for cancer dis
 to identify helpful profiles and information that can not be handled by simple query generalization but allow for ranking similar cases based on the
 similarity measures \citep{Haarbrandt2018}.
 
+
+\subsubsection{Flexible and Similarity-based Answering}
+\label{sec:meth_fqa_fqsba}
+
+As already mentioned previously, query generalization by anti-instantiation and and similarity-based answering suit each other well. Generalized queries
+that are anti-instatiated based on a selection on the relaxation attribute, i.e. the query is extended regarding the underlying similarity to match all
+elements from the most similar cluster corresponding to the constant symbol of the selection, can also be processed in a similarity-based way. In
+\cite{Wiese2014}, flexible answering is done by query rewriting and redirecting the rewritten with the help of a lookup table that maps the 
+clustering-induced, horizontal fragments to the servers they are hosted on. The redirection allows to avoid costly distributed joins as the relevant
+fragments can be identified before query execution using the clustering. One of the two developed approaches (cf. Section~\ref{sec:impl_alter}) uses a
+similar strategy that also profits from similarity-based and flexible answering as the relevant fragments can be brought into the rewriting of the queries.
+The other approach tries to utilize the internal partitioning of \citetalias{Ignite} to identify partitions that belong to a certain fragment and yield
+results based on local executions of queries at the servers that stores these partitions.
+Furthermore, if for other relations fragmentations can be derived according to the primary horizontal fragmentation, query execution will have additional 
+benefits in terms of performance as the queries can be processed as just described and are still only executed locally as the required data is collocated.
+
+
+\begin{exmp}
+\label{sec:meth_fqa_exmp2}
+Again consider the clustering-based fragmentation of relation $Products$ and assume that the three horizontal fragments $F_1$, $F_2$ and $F_3$ are
+materialized as relations $LandVehicles$, $Watercrafts$ and $Aircrafts$, respectively, each on three different servers. Then the same query as in
+Example~\ref{sec:meth_fqa_exmp} can of course be rewritten as illustrated in this example, but it can also be rewritten in a more intelligent way as the
+generalization simply incorporates the question for all aircrafts that can also be formulated by omitting any of the relaxation attribute selections and
+instead selecting the tuples from the materialized fragment $Aircrafts$ directly:
+\begin{verbatim}
+    SELECT Name, Price FROM Aircrafts
+\end{verbatim}
+This allows the DDBS to identify the server where all the aircraft data is stored which leads to the most efficient query execution when redirection 
+and local execution of the generalized query is restricted to a single server. A distributed query execution, on the contrary, that requires querying all
+servers for the aircraft data where actually even two of the servers return an empty result set as they do not host any aircraft data, would be less 
+efficient and would consume more resources than needed. 
+
+Additionally, consider production relevant data about components that are needed for each of the products which may be stored in a relation 
+called $Parts$. This relation could store references to vehicles, the required components and the appropriate amounts of the latter ones (see
+Table~\ref{tab:fqa_parts}). Because of the reference in each tuple to a certain vehicle, the relation can be fragmented by deriving a horizontal 
+fragmentation to the primary fragmentation of $Products$.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        Vehicle & Component & Amount \\
+        \hline
+        XFast & Bolt (L1234) & 1592 \\
+        XFast & Nut-V21 & 1106 \\
+        Rowy & Bolt (L1234) & 70 \\
+        \vdots & \vdots & \vdots \\
+        \hline
+    \end{tabular}
+    \caption{Relation $Parts$ describing for each vehicle (cf. Table~\ref{tab:cbfr_products}) all components and the appropriate amount needed in 
+                production}
+    \label{tab:fqa_parts}
+\end{table}
+
+Storing required materials for constructing a vehicle at the same location where also the corresponding vehicle information is stored facilitates the
+join of the two relations as this join can be performed locally like already discussed previously.
 \end{exmp}

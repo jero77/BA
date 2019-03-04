@@ -4,9 +4,39 @@
 \section{Implementation}
 \label{sec:impl}
 
+\todo[inline]{Summarize following subsections, probably also intro to medical information system (e.g. how, simplif., data, relations, security, etc.)}
 
 \subsection{Ignite Reference Implementation}
 \label{sec:impl_refimpl}
+In the intended way, the implementation of the simple medical information system in a distributed in-memory \citetalias{Ignite} database is achieved by 
+creating two partitioned tables to the corresponding relations in the database. These two tables are collocated via their shared attribute, the personal ID,
+such that personal information and the diseases a person suffers from are stored together. The corresponding SQL data definition langauge (DDL) statements are
+
+\begin{verbatim}
+    CREATE TABLE INFO (
+        ID INT PRIMARY KEY,
+        Name VARCHAR,
+        Address VARCHAR,
+        Age INT
+    ) WITH "template=partitioned,backups=0,affinityKey=ID"
+\end{verbatim}
+for the patients personal information and
+\begin{verbatim}
+    CREATE TABLE ILL (
+        ID INT,
+        Disease VARCHAR,
+        MeshID VARCHAR,
+        PRIMARY KEY (ID, Disease)
+    ) WITH "template=partitioned,backups=0,affinityKey=ID"
+\end{verbatim}
+for the listing of all the diseases for each patient. Both tables are partitioned, i.e. fragmented, horizontally by an abstract assignment of tuples to
+partitions based on a hash function applied to their affinity keys (attribute \verb!ID!) to ensure the collocation of the data. This approach is implemented
+without the clustering-based fragmentation which disables the possibility to make use of efficient similarity-based query answering. Furthermore, flexible 
+query answering can not be combined with the similarity-based query answering (cf. Section~\ref{sec:meth_fqa_fqsba}), either, thus, it requires for some less
+intelligent and less efficient query rewriting where the generalization of the query is achieved as disjunction that covers all similar constant symbols as
+shown in Example~\ref{sec:meth_fqa_exmp}. Only the collocation of the two relations via their shared attribute, which can be modeled as foreign key constraints
+in other relational database systems, allows the DDBS to gain some efficiency as costly data transfer between the nodes (servers) of the cluster can be avoided
+if the data to be joined is available locally.
 
 \subsection{Implementation Alternatives}
 \label{sec:impl_alter}
