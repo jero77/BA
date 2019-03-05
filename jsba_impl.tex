@@ -6,11 +6,50 @@
 
 \todo[inline]{Summarize following subsections, probably also intro to medical information system (e.g. how, simplif., data, relations, security, etc.)}
 
+
+
+\subsection{Clustering}
+\label{sec:impl_clust}
+
+The clustering, which is required as input for the used fragmentation strategy, is an adaptation of the approximation algorithm 
+\citep{Gonzales1985} for the clustering that allows for computing several subsets of the MeSH disease terms (see Appendix~\ref{app:terms}) based on pairwise 
+similarities instead of distances between the different terms such that all terms of the same subset are similar to one another. The similarity measure 
+\citep{McInnes2009} that is used here and in \citet{Wiese2014} accepts pairs of terms of the MeSH taxonomy among others as input and can calculate the
+pairwise similarities, $sim(a,b)$, with one of the implemented standard similarity measures. Those standard measures either base on the path length between
+two nodes that represent the MeSH terms in the taxonomy or base on the information content \citep{Resnik1995}. Some of them are (among others):
+\begin{itemize}
+    \item the path length, $\frac{1}{length(path(a,b))}$, where $length(path(a,b))$ denotes the number of all nodes on the shortest path between $a$ and $b$
+    \item the Leacock \& Chodorow measure, $-log(\frac{length(path(a,b))}{2*D})$, that again uses the path length and additionally the maximal depth D of all
+        concepts in the taxonomy, i.e. the maximal length of the shortest path from the root concept to any other concept
+    \item the Wu \& Palmer measure \citep{Wu1994}, $\frac{2*depth(lcs(a,b))}{depth(a)+depth(b)}$, which is defined for the depth of the two nodes $a$ and 
+        $b$ and the depth of their least common subsumer, $lcs(a,b)$, which is the most specific concept in the taxonomy that is an ancestor of $a$ and $b$
+    \item the Resnik measure \citep{Resnik1995}, $IC(lcs(a,b))$ that takes for similarity calculation only the information content of the least common 
+        subsumer of $ a$ and $b$ into account
+\end{itemize}
+
+For the sake of simplicity and due to the facts that, first of all, the provided UMLS::Similarity web interface
+(\url{http://maraca.d.umn.edu/cgi-bin/umls_similarity/umls_similarity.cgi}, see also \citep{UMLS::Sim}) is rather slow (ca. 20s per pairwise similarity) and
+,secondly, an alternative local installation of the similarity module \citep{McInnes2009} would require a chargeable license for the SNOMED CT clinical 
+terminology as it is part of the underlying UMLS Metathesaurus, the implementation is here based on the path length measure and is restricted to a randomly
+chosen subset of maximal 100 terms of all disease describing MeSH terms. Additionally, the web interface can not be used dynamically due to the high
+computation time. Instead, all pairwise similarities were precomputed for 10, 30 and 100 terms and stored in files that will be loaded and stored in-memory 
+during run time for fast access of the required similarity values.
+
+The clustering itself is implemented as a Java method (see Appendix~\ref{app:java_clustering}) that takes as input a list of all possible values for the
+relaxation attribute, i.e. a list of MeSH terms as strings, and returns a list of clusters, implemented as class "Cluster" (see
+Appendix~\ref{app:java_cluster}). The code is an implementation of the pseudocode from Listing~2 in \cite{Wiese2014} and the similarity threshold alpha is
+defined as class variable.
+
+
+\subsubsection{Scaling parameter alpha}
+
+
 \subsection{Ignite Reference Implementation}
 \label{sec:impl_refimpl}
-In the intended way, the implementation of the simple medical information system in a distributed in-memory \citetalias{Ignite} database is achieved by 
-creating two partitioned tables to the corresponding relations in the database. These two tables are collocated via their shared attribute, the personal ID,
-such that personal information and the diseases a person suffers from are stored together. The corresponding SQL data definition langauge (DDL) statements are
+The here described approach is used as reference when comparing the other approaches regarding the query execution time. In the intended way, this
+implementation of the simple medical information system in a distributed in-memory \citetalias{Ignite} database is achieved by creating two partitioned tables
+to the corresponding relations in the database. These two tables are collocated via their shared attribute, the personal ID, such that personal information and
+the diseases a person suffers from are stored together. The corresponding SQL data definition langauge (DDL) statements are
 
 \begin{verbatim}
     CREATE TABLE INFO (
@@ -30,21 +69,20 @@ for the patients personal information and
     ) WITH "template=partitioned,backups=0,affinityKey=ID"
 \end{verbatim}
 for the listing of all the diseases for each patient. Both tables are partitioned, i.e. fragmented, horizontally by an abstract assignment of tuples to
-partitions based on a hash function applied to their affinity keys (attribute \verb!ID!) to ensure the collocation of the data. This approach is implemented
-without the clustering-based fragmentation which disables the possibility to make use of efficient similarity-based query answering. Furthermore, flexible 
-query answering can not be combined with the similarity-based query answering (cf. Section~\ref{sec:meth_fqa_fqsba}), either, thus, it requires for some less
-intelligent and less efficient query rewriting where the generalization of the query is achieved as disjunction that covers all similar constant symbols as
-shown in Example~\ref{sec:meth_fqa_exmp}. Only the collocation of the two relations via their shared attribute, which can be modeled as foreign key constraints
-in other relational database systems, allows the DDBS to gain some efficiency as costly data transfer between the nodes (servers) of the cluster can be avoided
-if the data to be joined is available locally.
+partitions based on a hash function applied to their affinity keys (attribute \verb!ID!) to ensure the collocation of the data. The data is partitioned and 
+distributed in an arbitrary way where only collocation via the attribute \verb!ID! is guaranteed but not that any similar diseases terms are collacted because
+this approach is implemented without the clustering-based fragmentation which disables the possibility to make use of efficient similarity-based query
+answering. Furthermore, flexible query answering can not be combined with the similarity-based query answering (cf. Section~\ref{sec:meth_fqa_fqsba}) either,
+thus, it requires for some less intelligent and less efficient query rewriting where the generalization of the query is achieved as disjunction that covers all
+similar constant symbols as shown in Example~\ref{sec:meth_fqa_exmp}. Only the collocation of the two relations via their shared attribute, which can be 
+modeled as foreign key constraints in other relational database systems, allows the DDBS to gain some efficiency as costly data transfer between the nodes
+(servers) of the cluster can be avoided if the data to be joined is available locally.
 
 \subsection{Implementation Alternatives}
 \label{sec:impl_alter}
 
-\subsection{Clustering}
-\label{sec:impl_clust}
 
-\subsubsection{Scaling parameter alpha}
+
 
 \subsection{Query processing}
 \label{sec:impl_qpro}

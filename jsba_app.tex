@@ -9,6 +9,28 @@
 \label{app:queries}
 
 \begin{enumerate}
+
+    \item \begin{verbatim}
+        SELECT avg(p.age)
+        FROM INFO p
+    \end{verbatim}
+
+    \item \begin{verbatim}
+        SELECT p.name, p.age, p.address 
+        FROM ILL i, INFO p 
+        WHERE i.id = p.id 
+            AND i.disease='Liver Failure'
+    \end{verbatim}
+    
+    \item \begin{verbatim}
+        SELECT p.name, p.age, p.address 
+        FROM ILL i1, ILL i2, INFO p 
+        WHERE i1.id = p.id 
+            AND i2.id = p.id 
+            AND i1.disease='Liver Failure' 
+            AND i2.disease='Hemoptysis'
+    \end{verbatim}
+
     \item \begin{verbatim}
         SELECT i.disease, p.* 
         FROM ILL i, INFO p 
@@ -21,36 +43,6 @@
         WHERE i.id = p.id 
         GROUP BY p.name 
     \end{verbatim}
-    
-    \item \begin{verbatim}
-        SELECT avg(p.age)
-        FROM INFO p
-    \end{verbatim}
-    
-    \item \begin{verbatim}
-        SELECT p.name, p.age, p.address 
-        FROM ILL i, INFO p 
-        WHERE i.id = p.id 
-            AND i.disease='Cough'
-    \end{verbatim}
-    
-    \item \begin{verbatim}
-        SELECT p.name, p.age, p.address 
-        FROM ILL i, INFO p 
-        WHERE i.id = p.id 
-            AND i.disease='Liver Failure'
-    \end{verbatim}
-    
-
-    \item \begin{verbatim}
-        SELECT p.name, p.age, p.address 
-        FROM ILL i1, ILL i2, INFO p 
-        WHERE i1.id = p.id 
-            AND i2.id = p.id 
-            AND i1.disease='Liver Failure' 
-            AND i2.disease='Hemoptysis'
-    \end{verbatim}
-
 
     \item \begin{verbatim}
         SELECT p.name, i1.disease, i2.disease 
@@ -62,3 +54,134 @@
 
 
 \end{enumerate}
+
+\newpage
+\subsection{MeSH Terms}
+\label{app:terms}
+
+This following terms are a randomly chosen subset of all disease describing Medical Subject Headings 2019 terms obtained from the SPARQL endpoint 
+that can be found here \url{http://id.nlm.nih.gov/mesh/sparql}. The corresponding SPARQL query is
+\begin{verbatim}
+    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX owl: <http://www.w3.org/2002/07/owl#>
+    PREFIX meshv: <http://id.nlm.nih.gov/mesh/vocab#>
+    SELECT DISTINCT ?N
+    FROM <http://id.nlm.nih.gov/mesh>
+    WHERE { 
+        ?D a meshv:Descriptor .
+        ?D rdfs:label ?N .
+        ?D meshv:treeNumber ?TN .
+        FILTER(REGEX(?TN,'C'))
+    }
+    ORDER BY ?D
+\end{verbatim}
+which queries for all disease names (\verb!rdfs:label!) from all descriptors contained by filtering out only those descriptors that are contained in the
+tree identified by 'C', the disease tree, with the help of the filter \verb!FILTER(REGEX(?TN,'C'))!.
+
+\paragraph{Term set (semicolon-separated):}$ $\\
+Choroidal Neovascularization; Keratitis; Catalepsy; Liver Diseases, Alcoholic; Liver Failure; Iliac Aneurysm; Hemoptysis; Fallopian Tube Neoplasms;
+Paralysis, Obstetric; Pre-Excitation, Mahaim-Type; Setariasis; Neurodegenerative Diseases; Hepatitis B, Chronic; Vaginal Discharge; Hypogonadism;
+Spinal Cord Vascular Diseases; Abnormalities, Drug-Induced; Central Nervous System Viral Diseases; Soft Tissue Neoplasms; Collagen Diseases; 
+Tuberculosis, Female Genital; Contrecoup Injury; Brugada Syndrome; Echinococcosis; Skin Manifestations; Multiple Endocrine Neoplasia Type 1; 
+Focal Infection; Angiokeratoma; Nose Diseases; Bacteroidaceae Infections; Dental Fissures; Intraoperative Awareness; Facial Neoplasms; Trypanosomiasis;
+Latent Tuberculosis; Congenital Hyperinsulinism; Alzheimer Disease; Ascorbic Acid Deficiency; Serratia Infections; Morning Sickness; 
+Amyloid Neuropathies, Familial; Methemoglobinemia; Abdominal Neoplasms; Tuberculosis, Lymph Node; Mucopolysaccharidosis III; Blackwater Fever; Hot Flashes;
+Adrenal Rest Tumor; Squamous Intraepithelial Lesions of the Cervix; Ichthyosis Bullosa of Siemens; Sleep Paralysis; Disease Susceptibility; 
+HIV Seropositivity; Cowpox; Spermatocele; Gait Apraxia; Miliaria; Focal Epithelial Hyperplasia; Adrenal Insufficiency; Putaminal Hemorrhage; 
+Forearm Injuries; Multiple Endocrine Neoplasia Type 2b; Burkholderia Infections; Brain Concussion; Compassion Fatigue; Rat-Bite Fever; Bone Malalignment;
+Equinus Deformity; Pure Autonomic Failure; Chediak-Higashi Syndrome; Anemia, Diamond-Blackfan; Confusion; Herpes Simplex; Migraine without Aura;
+Kwashiorkor; Eye Abnormalities; Esophagitis, Peptic; Hepatitis, Viral, Animal; Lip Diseases; Granuloma, Foreign-Body; Papilloma, Inverted; 
+Mediastinal Emphysem; Bell Palsy; Port-Wine Stain; Intellectual Disability; Lingual Goiter; Gynecomastia; Alternariosis; Sinoatrial Block; Agranulocytosis;
+Intestinal Diseases; Gingivitis, Necrotizing Ulcerative; Trichuriasis; Tachycardia; Erythema Infectiosum; Impetigo; Pyomyositis; Hematocolpos; Cough;
+Mental Retardation, X-Linked
+
+\subsection{Clustering - Parameter $\alpha$}
+\label{app:alpha}
+
+\subsubsection{10 Terms}
+\label{app:alpha_10terms}
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        $\alpha$ & Clusters & Terms/Cluster  \\
+        \hline
+        0.2 & 9 & 1.$\overline{1}$ \\
+        0.15 & 7 & 1.$\overline{428571}$ \\
+        0.13 & 6 & 1.$\overline{6}$ \\
+        0.12 & 5 & 2 \\
+        0.1 & 1 & 10 \\
+        \hline
+    \end{tabular}
+    \caption{Number of clusters and cluster size for different values for threshold parameter $\alpha$ restricted to the first 10 terms of the
+            term set (Appendix~\ref{app:terms})}
+    \label{tab:app_10terms}
+\end{table}
+
+
+\subsubsection{30 Terms}
+\label{app:alpha_30terms}
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        $\alpha$ & Clusters & Terms/Cluster  \\
+        \hline
+        0.2 & 19 & $\approx$1.58 \\
+        0.15 & 12 & 2.5 \\
+        0.14 & 9 & 3.$\overline{3}$ \\
+        0.13 & 9 & 3.$\overline{3}$ \\
+        0.12 & 8 & 3.75 \\
+        0.11 & 2 & 15 \\
+        0.1 & 1 & 30 \\
+        \hline
+    \end{tabular}
+    \caption{Number of clusters and cluster size for different values for threshold parameter $\alpha$ restricted to the first 30 terms of the
+            term set (Appendix~\ref{app:terms})}
+    \label{tab:app_30terms}
+\end{table}
+
+
+\subsubsection{100 Terms}
+\label{app:alpha_100terms}
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        $\alpha$ & Clusters & Terms/Cluster  \\
+        \hline
+        0.2 & 51 & $\approx$2 \\
+        0.15 & 34 & $\approx$2.94 \\
+        0.13 & 22 & 4.$\overline{54}$ \\
+        0.12 & 15 & 6.$\overline{6}$ \\
+        0.11 & 6 & 16.$\overline{6}$ \\
+        0.1 & 3 & 33.$\overline{3}$ \\
+        \hline
+    \end{tabular}
+    \caption{Number of clusters and cluster size for different values for threshold parameter $\alpha$ for all 100 terms of the term set
+            (Appendix~\ref{app:terms})}
+    \label{tab:app_100terms}
+\end{table}
+
+\newpage
+\subsection{Clustering Java Code}
+\label{app:java}
+\lstdefinestyle{javacode}{
+    language=Java,
+    basicstyle=\tiny,
+    numbers=left,
+    numbersep=2pt,
+    numberstyle=\tiny, 
+    showspaces=false, 
+    showstringspaces=false
+}
+
+\subsubsection{Cluster Class}
+\label{app:java_cluster}
+\lstinputlisting[style=javacode]{sourcecode/Cluster.java}
+
+
+\subsubsection{Clustering Procedure}
+\label{app:java_clustering}
+\lstinputlisting[style=javacode, firstline=280, lastline=376]{sourcecode/ClusteringAffinityFunction.java}
