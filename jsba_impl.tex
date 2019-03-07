@@ -27,6 +27,8 @@ two nodes that represent the MeSH terms in the taxonomy or base on the informati
         subsumer of $ a$ and $b$ into account
 \end{itemize}
 
+\todo[inline]{small example? taxonomy -> path length?}
+
 For the sake of simplicity and due to the facts that, first of all, the provided UMLS::Similarity web interface
 (\url{http://maraca.d.umn.edu/cgi-bin/umls_similarity/umls_similarity.cgi}, see also \citep{UMLS::Sim}) is rather slow (ca. 20s per pairwise similarity) and
 ,secondly, an alternative local installation of the similarity module \citep{McInnes2009} would require a chargeable license for the SNOMED CT clinical 
@@ -38,10 +40,79 @@ during run time for fast access of the required similarity values.
 The clustering itself is implemented as a Java method (see Appendix~\ref{app:java_clustering}) that takes as input a list of all possible values for the
 relaxation attribute, i.e. a list of MeSH terms as strings, and returns a list of clusters, implemented as class "Cluster" (see
 Appendix~\ref{app:java_cluster}). The code is an implementation of the pseudocode from Listing~2 in \cite{Wiese2014} and the similarity threshold alpha is
-defined as class variable.
+defined as class variable. The clustering starts with a single cluster containing the whole active domain and an arbitrarily chosen head and then identifies
+the minimal similarity inside the cluster between all terms from the active domain and the cluster head. In the following, there are created new clusters with 
+new head elements based on the minimal similarity of a term to the head of a cluster where it belongs to as long as the similarity threshold is not exceeded 
+and all terms are reassigned if they are more similar to the head of the new created cluster. The procedure iterates as long as there are still elements inside
+one of the clusters that have a similarity to the corresponding head element that is lower than the similarity treshold alpha. Hence, the iteration proceeds
+until each element of the active domain is clustered such that the minimal similarity with regards to the threshold $\alpha$ from Definition~\ref{def:cbfr}
+can be ensured. The following example shows how a clustering is computed for a given set of disease terms and the pairwise similarities of the diseases.
+
+\begin{exmp}
+\label{sec:impl_clust_exmp}
+
+Consider the same sample disease term set as already examined in Example~4 in \cite{Wiese2014},
+\begin{align*}
+    \{Asthma, Cough, Influenza, Tibial Fracture, Ulna Fracture\},
+\end{align*}
+and the corresponding pairwise similarities of the diseases like shown in Table~\ref{tab:impl_similarities} in order to illustrate the functionality of the 
+clustering procedure. All the respiratory diseases are similar to one another and the same holds for the two fractures but fractures are obviously not that
+similar to respiratory diseases, and vice versa.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|c|c c c c c|}
+        \hline
+         & Asthma & Cough & Influenza & Tibial Fracture & Ulna Fracture \\
+        \hline
+        Asthma & 1 & 0.2 & 0.2 & 0.1429 & 0.1429 \\
+        Cough & 0.2 & 1 & 0.2 & 0.1429 & 0.1429 \\
+        Influenza & 0.2 & 0.2 & 1 & 0.1429 & 0.1429 \\
+        Tibial Fracture & 0.1429 & 0.1429 & 0.1429 & 1 & 0.3333 \\
+        Ulna Fracture & 0.1429 & 0.1429 & 0.1429 & 0.3333 & 1 \\
+        \hline
+    \end{tabular}
+    \caption{Pairwise similarities of some diseases (obtained via UMLS::Similarity)}
+    \label{tab:impl_similarities}
+\end{table}
+
+Let $\alpha=0.2$. The clustering procedure starts by creating the first cluster $c_1$ with an arbitrarily chosen head, e.g. the first disease of the set 
+($head_1="Asthma"$), and moves all remaining terms to the cluster's subset. In the next step, the minimal similarity of any disease term to the cluster head, 
+$s_{min}=\min\limits_{a \in c_1}~sim(a, head_1)$, is calculated and compared to the similarity threshold. As the minimal intracluster similarity still is below
+the threshold, $s_{min}=0.1429 < 0.2=\alpha$, the identified minimizing disease term is chosen to be the head element of the next cluster, i.e. 
+$\argmin\limits_{a \in c_1}~sim(a, head_1)="Tibial Fracture"=head_2 \in c_2$. After this step, all diseases of cluster $c_1$ that are more similar to the
+fracture, that is, the other fracture disease, than to asthma will be reassigned to the cluster $c_2$. The clustering computation is complete as the minimal 
+intracluster similarities for all clusters are above the thresold: 
+\begin{align*}
+    \forall c_i, i \in \{1,2\}: \min\limits_{a \in c_i}~sim(a, head_i) \geq \alpha
+\end{align*}
+The resulting clustering is $\{c_1, c_2\}$ where $c_1=\{Asthma,Cough,Influenza\}$ and $c_2=\{Tibial Fracture, Ulna Fracture\}$. If the similarity threshold is
+below the minimal pairwise similarity of any two diseases, e.g. $\alpha=0.14$, then the computation stops after the initial step before the first iteration
+and the resulting clustering consists of only one cluster. If $\alpha > 0.2$, there would be one cluster with the two fractures and a own cluster for each of 
+the respiratory diseases.
 
 
-\subsubsection{Scaling parameter alpha}
+\end{exmp}
+
+
+
+\subsubsection{Scaling parameter $\alpha$}
+\label{sec:impl_clust_alpha}
+
+The similarity threshold $\alpha$ which is used in the computation of the clustering of the active domain of the relaxation attribute (\verb!Disease!) 
+determines how big the similarity of a term to the head of a cluster has to be at least such that they will be assigned to the same cluster. By choosing an
+appropriate threshold, it is assured that no two diseases, represented by terms, that have no significant similarity at all belong to the same cluster and are 
+subsequently seen as similar diseases. Of course, the chosen similarity measure is rather simple and the threshold was chosen arbitrarily as not the full
+MeSH taxonomy, i.e. all disease terms in this case, was considered and only the simplest measure based solely on the path length of the shortest path between
+two diseases was used to obtain the similarity values. Appendix~\ref{app:alpha} shows how the number of clusters and also the average number of terms per
+cluster for the different term subsets (10, 30 or 100 terms) varies when scaling the similarity threshold parameter. Like shown, an alpha value of at least
+$0.2$ always caused the clustering to contain a lot of clusters whereas the corresponding active domain subsets of each cluster often only contained a head
+atom, thus, a that big value is not reasonable and far from the idea behind a clustering that clusters similar diseases and allows for similarity-based and
+flexible answering. For $\alpha=0.1$, the two smallest term subset lead to a clustering consisting of only one cluster with all the terms in it 
+(Appendix~\ref{app:alpha_10terms}, \ref{app:alpha_30terms}), which indicates that for these two subsets the minimal similarity of two diseases was higher than
+$0.1$, and the biggest term subset lead to 3 big clusters. In conclusion, the chosen value for $\alpha$ should be between $0.1$ and $0.2$ as other values would
+cause an unreasonable clustering and for the further evaluations the chosen value for alpha was fixed for the different term subsets, i.e. for 10 and 100 terms
+$\alpha=0.12$ and for 30 terms $\alpha=0.15$.
 
 
 \subsection{Ignite Reference Implementation}
@@ -70,7 +141,7 @@ for the patients personal information and
 \end{verbatim}
 for the listing of all the diseases for each patient. Both tables are partitioned, i.e. fragmented, horizontally by an abstract assignment of tuples to
 partitions based on a hash function applied to their affinity keys (attribute \verb!ID!) to ensure the collocation of the data. The data is partitioned and 
-distributed in an arbitrary way where only collocation via the attribute \verb!ID! is guaranteed but not that any similar diseases terms are collacted because
+distributed in an arbitrary way where only collocation via the attribute \verb!ID! is guaranteed but not that any similar disease terms are collocated because
 this approach is implemented without the clustering-based fragmentation which disables the possibility to make use of efficient similarity-based query
 answering. Furthermore, flexible query answering can not be combined with the similarity-based query answering (cf. Section~\ref{sec:meth_fqa_fqsba}) either,
 thus, it requires for some less intelligent and less efficient query rewriting where the generalization of the query is achieved as disjunction that covers all
