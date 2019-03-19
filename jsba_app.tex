@@ -60,7 +60,7 @@
 \label{app:terms}
 
 This following terms are a randomly chosen subset of all disease describing Medical Subject Headings 2019 terms obtained from the SPARQL endpoint 
-that can be found here \url{http://id.nlm.nih.gov/mesh/sparql}. The corresponding SPARQL query is
+(that can be found under \url{http://id.nlm.nih.gov/mesh/sparql}). The corresponding SPARQL query is
 \begin{verbatim}
     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -74,7 +74,6 @@ that can be found here \url{http://id.nlm.nih.gov/mesh/sparql}. The correspondin
         ?D meshv:treeNumber ?TN .
         FILTER(REGEX(?TN,'C'))
     }
-    ORDER BY ?D
 \end{verbatim}
 which queries for all disease names (\verb!rdfs:label!) from all descriptors contained by filtering out only those descriptors that are contained in the
 tree identified by 'C', the disease tree, with the help of the filter \verb!FILTER(REGEX(?TN,'C'))!.

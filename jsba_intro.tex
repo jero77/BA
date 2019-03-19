@@ -17,14 +17,14 @@ distributed database system (DDBS).
 
 
 In the case of a relational data model underlying the database, a fragmentation of the data can be a \emph{horizontal} or \emph{vertical fragmentation} 
-of the relations (tables) of the database \citep[p.~104f.]{Ozsu1991}. A horizontal fragmentation means a tuple-wise assignment to fragments, i.e. fragments
+of the relations (tables) of the database \citep[pp.~104f.]{Ozsu1991}. A horizontal fragmentation means a tuple-wise assignment to fragments, i.e. fragments
 contain subsets of rows of the non-fragmented table, whereas a vertical fragmentation "slices" the relation by its attributes, i.e. fragments contain
 projections to the columns. 
 The here analyzed and implemented approach uses a clustering heuristic on one chosen attribute as described in \citet{Wiese2014} to obtain a primary
 horizontal fragmentation for a relation. The clustering procedure depends on a similarity calculation of the values of the chosen relaxation attribute 
 resulting in a clustering of the column's values, such that values with a high similarity belong to the same cluster. Hence, a fragmentation of relations
 that have common attributes with this horizontally fragmented relation, i.e. attributes that will be used in queries to join these two relations, can be 
-\emph{derived}~\citep[p.~116f.]{Ozsu1991}, such that the tuples which are about to be joined reside on the same server allowing for better performance in 
+\emph{derived}~\citep[pp.~116f.]{Ozsu1991}, such that the tuples which are about to be joined reside on the same server allowing for better performance in 
 queries compared to query processing with a distributed join which has to be applied if the data is not residing at the same
 site~\citep{Sattler2009DistJoin}.
 Thus, this derived horizontal fragmentation improves data locality~\citep{Wiese2014} because the probably high delay of data transmission over the 

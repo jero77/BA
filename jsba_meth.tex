@@ -162,7 +162,7 @@ disjoint and non-redundant as each tuple is assigned to only fragment according 
 Thus, the relation instance $R$ can be reconstructed from the horizontal fragments with its localization program. Covering these three aspects, the
 obtained fragmentation is a correct fragmentation \cite[p.~103]{Ozsu1991}. The following example illustrates the clustering-based fragmentation without
 concerning a concrete similarity in terms of a metric but with a intuitive idea of similarity. The behavior of the clustering procedure when scaling the
-threshold parameter is analyzed in Section. \todo[inline]{Ref alpha scaling}
+threshold parameter is analyzed in Section~\ref{sec:impl_clust_alpha}.
 
 \begin{exmp}
 \label{sec:meth_cbfr_exmp}
@@ -370,7 +370,7 @@ contained selection condition on the category of the vehicle with any aircraft r
 All three queries produce the same result set which, on the contrary, can contain some at least similar information compared to the initially failing,
 non-generalized query. Besides this query generalization in order to return all available data about aircrafts, the user's interest to buy an aircraft of
 another category which is actually sold might be aroused when getting the information about this similar alternatives which might be beneficial for the
-company. Also notice the three equivalent SQL expressions of the corresponding, equivalent, disjunctive FOL formulas
+company. Also notice the three equivalent SQL expressions of the corresponding, equivalent and disjunctive FOL formulas
 \begin{equation*}
 \exists Z:~Products(N,P,Z)~\land~(Z="Airplane"~\lor~Z="Glider"~\lor~Z="Helicopter") \notag
 \end{equation*}
@@ -397,7 +397,7 @@ similarity measures \citep{Haarbrandt2018}.
 \subsubsection{Flexible and Similarity-based Answering}
 \label{sec:meth_fqa_fqsba}
 
-As already mentioned previously, query generalization by anti-instantiation and and similarity-based answering suit each other well. Generalized queries
+As already mentioned previously, query generalization by anti-instantiation and similarity-based answering suit each other well. Generalized queries
 that are anti-instatiated based on a selection on the relaxation attribute, i.e. the query is extended regarding the underlying similarity to match all
 elements from the most similar cluster corresponding to the constant symbol of the selection, can also be processed in a similarity-based way. In
 \cite{Wiese2014}, flexible answering is done by query rewriting and redirecting the rewritten with the help of a lookup table that maps the 

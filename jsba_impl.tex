@@ -4,9 +4,24 @@
 \section{Implementation}
 \label{sec:impl}
 
-\todo[inline]{Summarize following subsections, probably also intro to medical information system (e.g. how, simplif., data, relations, security, etc.)}
+The technical details of the implementation are discussed in the following sections. First of all, there will be given an overview of the technical 
+infrastructure in terms of a cluster of Ignite server nodes spread across physical machines in a network. Secondly, the clustering procedure adapting to the 
+approximation algorithm for clustering as described in \citet{Gonzales1985} is explained and its functionality under different similarity thresholds and term
+sets is illustrated.  
+
+\todo[inline]{Summarize remaining subsections, probably also intro to medical information system (e.g. how, simplif., data, relations, security, examples etc.)}
 
 
+\subsection{Technical Infrastructure}
+
+The distributed \citetalias{Ignite} databases underlying the sample medical information system that is evaluated here is represented by a cluster of three
+Ignite nodes where each of the nodes runs in a JVM and is hosted by one of three servers. The three servers are provided by the "Gesellschaft für 
+wissenschaftliche Datenverarbeitung mbH Göttingen" (GWDG) via a cloud server service and form the technical infrastructure to support data storage and physical
+data distribution. Each server has a publicly available ip address and a private ip address that is only visible for the other servers in the same subnet. 
+A total of 24~GB memory for the cloud is split equally among all machines and each server has 4 processors. The nodes can communicate via the links of the
+subnet they all belong to and each node can be accessed by its public ip address. Any Ignite client node can connect remotely to the cluster and access the 
+data stored by the server nodes. The server nodes have to be started manually with a certain configuration file that specifies all required information, e.g.
+information about the distributed tables and the affinity functions to be used for partitioning and collocation.
 
 \subsection{Clustering}
 \label{sec:impl_clust}
@@ -18,24 +33,27 @@ similarities instead of distances between the different terms such that all term
 pairwise similarities, $sim(a,b)$, with one of the implemented standard similarity measures. Those standard measures either base on the path length between
 two nodes that represent the MeSH terms in the taxonomy or base on the information content \citep{Resnik1995}. Some of them are (among others):
 \begin{itemize}
-    \item the path length, $\frac{1}{length(path(a,b))}$, where $length(path(a,b))$ denotes the number of all nodes on the shortest path between $a$ and $b$
-    \item the Leacock \& Chodorow measure, $-log(\frac{length(path(a,b))}{2*D})$, that again uses the path length and additionally the maximal depth D of all
-        concepts in the taxonomy, i.e. the maximal length of the shortest path from the root concept to any other concept
+    \item the path length measure, calculated as $\frac{1}{length(path(a,b))}$, where $length(path(a,b))$ denotes the number of all nodes on the shortest path 
+        between $a$ and $b$
+    \item the Leacock \& Chodorow measure \citep{Leacock1998} is calculated as $-log(\frac{length(path(a,b))}{2*D})$, that again uses the path length and
+        additionally the maximal depth D of all concepts in the taxonomy $T$, i.e. the maximal length of the shortest path from the root concept to any other
+        concept, $\max\limits_{a \in T}~length(path(a, root(T))$, where $root(T)$ denotes the root of the taxonomy $T$
     \item the Wu \& Palmer measure \citep{Wu1994}, $\frac{2*depth(lcs(a,b))}{depth(a)+depth(b)}$, which is defined for the depth of the two nodes $a$ and 
         $b$ and the depth of their least common subsumer, $lcs(a,b)$, which is the most specific concept in the taxonomy that is an ancestor of $a$ and $b$
     \item the Resnik measure \citep{Resnik1995}, $IC(lcs(a,b))$ that takes for similarity calculation only the information content of the least common 
         subsumer of $ a$ and $b$ into account
 \end{itemize}
 
-\todo[inline]{small example? taxonomy -> path length?}
 
-For the sake of simplicity and due to the facts that, first of all, the provided UMLS::Similarity web interface
-(\url{http://maraca.d.umn.edu/cgi-bin/umls_similarity/umls_similarity.cgi}, see also \citep{UMLS::Sim}) is rather slow (ca. 20s per pairwise similarity) and
-,secondly, an alternative local installation of the similarity module \citep{McInnes2009} would require a chargeable license for the SNOMED CT clinical 
-terminology as it is part of the underlying UMLS Metathesaurus, the implementation is here based on the path length measure and is restricted to a randomly
-chosen subset of maximal 100 terms of all disease describing MeSH terms. Additionally, the web interface can not be used dynamically due to the high
-computation time. Instead, all pairwise similarities were precomputed for 10, 30 and 100 terms and stored in files that will be loaded and stored in-memory 
-during run time for fast access of the required similarity values.
+For the sake of simplicity and due to the facts that, first of all, the UMLS::Similarity web interface
+(\url{http://maraca.d.umn.edu/cgi-bin/umls_similarity/umls_similarity.cgi}, see also \citep{UMLS::Sim}) is rather slow (ca. 20s per pairwise similarity 
+computation) and,secondly, an alternative local installation of the similarity module \citep{McInnes2009} would require a chargeable license for the SNOMED CT
+clinical terminology (Systematized Nomenclature of Human and Veterinary Medicine – Clinical Terms, see \url{http://www.snomed.org/}) as it is part of the
+underlying UMLS Metathesaurus, the implementation is here based on the path length measure and is restricted to a randomly chosen subset of maximal 100 terms 
+of all disease describing MeSH terms. Additionally, the web interface can not be used dynamically due to the high computation time. Instead, all pairwise
+similarities were precomputed for 10, 30 and 100 terms (Appendix~\ref{app:terms}) and stored in files that will be loaded and stored in-memory during run time
+for fast access of the required similarity values. This is achieved by storing all pairwise similarities in a hash table and looking up the similarity values
+at run time whenever needed.
 
 The clustering itself is implemented as a Java method (see Appendix~\ref{app:java_clustering}) that takes as input a list of all possible values for the
 relaxation attribute, i.e. a list of MeSH terms as strings, and returns a list of clusters, implemented as class "Cluster" (see
@@ -91,7 +109,6 @@ below the minimal pairwise similarity of any two diseases, e.g. $\alpha=0.14$, t
 and the resulting clustering consists of only one cluster. If $\alpha > 0.2$, there would be one cluster with the two fractures and a own cluster for each of 
 the respiratory diseases.
 
-
 \end{exmp}
 
 
@@ -109,10 +126,10 @@ cluster for the different term subsets (10, 30 or 100 terms) varies when scaling
 $0.2$ always caused the clustering to contain a lot of clusters whereas the corresponding active domain subsets of each cluster often only contained a head
 atom, thus, a that big value is not reasonable and far from the idea behind a clustering that clusters similar diseases and allows for similarity-based and
 flexible answering. For $\alpha=0.1$, the two smallest term subset lead to a clustering consisting of only one cluster with all the terms in it 
-(Appendix~\ref{app:alpha_10terms}, \ref{app:alpha_30terms}), which indicates that for these two subsets the minimal similarity of two diseases was higher than
-$0.1$, and the biggest term subset lead to 3 big clusters. In conclusion, the chosen value for $\alpha$ should be between $0.1$ and $0.2$ as other values would
-cause an unreasonable clustering and for the further evaluations the chosen value for alpha was fixed for the different term subsets, i.e. for 10 and 100 terms
-$\alpha=0.12$ and for 30 terms $\alpha=0.15$.
+(cf. Appendix~\ref{app:alpha_10terms}, \ref{app:alpha_30terms}), which indicates that for these two subsets the minimal similarity of two diseases was higher 
+than $0.1$, and the biggest term subset lead to 3 big clusters. In conclusion, the chosen value for $\alpha$ should be between $0.1$ and $0.2$ as other values
+would cause an unreasonable clustering and for the further evaluations the chosen value for alpha was fixed for the different term subsets, i.e. for 10 and 100
+terms $\alpha=0.12$ and for 30 terms $\alpha=0.15$.
 
 
 \subsection{Ignite Reference Implementation}
@@ -152,12 +169,127 @@ modeled as foreign key constraints in other relational database systems, allows 
 \subsection{Implementation Alternatives}
 \label{sec:impl_alter}
 
+This section describes the two developed implementation alternatives that utilize the by \citetalias{Ignite} provided technical infrastructure together with a
+clustering-based fragmentation based on the similarity metric defined for the MeSH disease terms in order to form a medical information system for patient data 
+which is distributed across the cloud servers according to the horizontal fragmentation. The query processing in this two approaches, especially in terms of 
+similarity-based and flexible answering, is discussed in detail in Section~\ref{sec:impl_qpro}.
+
+\subsubsection{Materialized Fragment Approach}
+\label{sec:impl_alter_mater}
+The first approach is the "materialized fragment" approach that stores the horizontal fragments, that are induced by the precomputed clustering of the disease
+terms based on the similarity metric, as separate relations in the database with different table names for the different fragments. Although the materialized
+fragments in the examples have names that cover the content represented by the corresponding cluster, e.g. the semantical characterization of the different
+products through the fragment name as in Example~\ref{sec:meth_fqa_exmp2}, the fragment table names in this approach are only generated syntactically, for the
+sake of simplicity, by concatenation of the underlying relation name, an underscore and the fragment number, e.g. \verb!ILL_0!. To achieve the distribution of
+the horizontal fragments, that are now separate tables and not longer belong together syntactically from the DDBS's point of view, to the servers, a modified
+affinity function has to be explicitly provided and made available on all nodes. This affinity function handles the mapping of the materialized fragments to 
+the servers and also provides the similarity function for two disease terms that is required for both the clustering and the query rewriting and answering 
+(cf. Section~\ref{sec:impl_qpro_sbfq}). Furthermore, the collocation of the \verb!ILL!- and \verb!INFO!-fragments via a derived horizontal fragmentation can
+only be achieved by storing the personal information of patients (\verb!INFO!-tuples) at each server that hosts also information about a disease that this
+patient has, i.e. to each \verb!ILL!-fragment there is also an \verb!INFO!-fragment present on the same server for appropriate collocation. Still, the
+horizontal fragmentation and the materialization of the fragments of the relations as separate relations is still transparent for the user as the clustering 
+and the because of that required rewriting of queries is done automatically by the system.
+
+
+\subsubsection{Partitioning Approach}
+%\label{sec:impl_alter_...}
+\todo[inline]{Partitioning approach, cool sectionname}
+
+The second approach, \dotsi, also materializes the fragments analogously to the first approach but in an from the SQL perspective invisible way by assigning
+different partition numbers to the different fragments of the relations via the affinity function API instead of different relation names. The partitions of 
+the relations are then distributed and mapped to the servers. By doing so, the queries do not require to be rewritten as in the first approach because the 
+query processing is almost completely done by Ignite's query processor and the fragmentation is again fully transparent for the user.
 
 
 
 \subsection{Query processing}
 \label{sec:impl_qpro}
 
+Most of the query processing and execution is left up to \citetalias{Ignite} itself as it incorporates a parser as well as distribution and optimization
+mechanisms for SQL queries. Especially, if data is collocated and can be executed in a collocated fashion instead of a non-collocated execution, the cluster 
+can benefit from the collocation and benefit from the application of optimizations with more efficient query answering. However, in order to bring the
+intelligence into the application by utilizing the knowledge about the clustering-based fragmentation of the stored data, additional query rewriting and
+redirection are both required and helpful when trying to avoid costly distributed joins across all nodes in the cluster and further optimize the execution 
+with the help of similarity-based query answering.
+
 \subsubsection{Rewriting}
+\label{sec:impl_qpro_rewr}
+
+JSqlParser is an open source Java SQL parser tool (provided at \url{https://github.com/JSQLParser/JSqlParser}) that translates SQL queries in a hierarchy 
+of java classes that can be navigated with the so-called visitor design pattern \cite[pp.~331ff.]{Gamma1994} and allows for identifying and modifying all the
+subexpressions in the query, e.g. comparison expressions contained in the \verb!WHERE! clause of the query. This tool is used in the implementation 
+to rewrite all the queries according to the underlying clustering-based fragmentation. In particular, this is implemented by parsing the given string that 
+represents an SQL query, traversing the generated Java class hierarchy, modifiying all the classes that belong to expressions referring to the relations in
+the database, e.g. a selection condition or any \verb!FROM! expression, and returning a string that represents the rewritten query. Besides, this also allows
+for interoperability of the rewriting mechanisms for any other SQL backend. 
+
+\begin{exmp}
+\label{sec:impl_qpro_exmp}
+For instance, assume the query
+\begin{verbatim}
+    SELECT * FROM ILL WHERE ILL.disease = 'Cough'
+\end{verbatim}
+and a clustering-based fragmentation as described in Example~\ref{sec:impl_clust_exmp} (for $\alpha=0.2$). The parsing of the query string results in a 
+traversable class hierarchy that also contains a comparison expression class, i.e. the comparison of the column reference \verb!ILL.diseases! to the constant 
+symbol \verb!'Cough'!, a disease term. Then, by calculating the similarity of the disease in the selection condition, a cluster with maximal similarity is
+identified, thus, the query can be rewritten to match the fragment that corresponds to the identified cluster. This is done by modifiying the in the 
+\verb!FROM! clause contained table expression, \verb!FROM ILL!, to reference the relevant fragment of the table:
+\begin{verbatim}
+    SELECT * FROM ILL_0 WHERE ILL.disease = 'Cough'
+\end{verbatim}
+\end{exmp}
+
+The reference implementation system is not able to handle a query in a way like described in Example~\ref{sec:impl_qpro_exmp} as the fragmentation of the data
+is arbitrarily computed and completely apart from a clustering-based fragmentation (cf. Section~\ref{sec:meth_cbfr}). This query can only be sent
+to all the servers in a MapReduce \citep{MapReduce2004} fashion where the query is executed locally and in parallel on all caching nodes (mapping step) and the 
+results are accumulated as a union of all result sets into a single result set (reduce step). The other two approaches (Section~\ref{sec:impl_alter}), on the
+contrary, are able to identify the server that is responsible for the only relevant fragment of the data and process the queries in their own, more efficient
+way (cf. Section~\ref{sec:impl_qpro_sbfq}).
+
 
 \subsubsection{Similarity-based and Flexible Query Answering}
+\label{sec:impl_qpro_sbfq}
+
+The here developed approaches are, as already mentioned before, able to rewrite given SQL queries such that they match the underlying clustering-based
+fragmentation, which clusters the data with the similarity of the diseases. In case of the first approach, where the fragments of the relations \verb!ILL! and
+\verb!INFO! are materialized as separate SQL tables, it is required to rewrite queries according to that materialization, i.e. all the table expressions in the
+queries have to be adapted to the corresponding fragment. If there is a selection condition on the relaxation attribute in the query for a certain disease, the
+single relevant fragment is determined and rewritten. If there is no such selection condition, a localization program has to be used in order to answer the 
+query correctly by considering all existing fragments. Another execution strategy here is again MapReduce \citep{MapReduce2004} which would first rewrite the 
+query once for each fragment to obtain a fragment-specific subquery, and then map each subquery to only the server hosting that certain fragment. This strategy
+only works for not too complex queries as it relies on the improved data locality of the collocation. For instance, queries requiring for inter-fragment joins,
+i.e. queries that do not join the relations \verb!ILL! and \verb!INFO! via their collocating attribute (identificators of the persons) or queries that join a
+relation with itself like the last query of Appendix~\ref{app:queries}, are computationally highly expensive as they have to be rewritten for all combinations
+of any two or even more fragments. This results in a combinatorial explosion of the number of subqueries in both MapReduce and the localization program which
+causes bad performance at the query execution.
+
+In case of the second approach, where fragments of the relations are hidden from the SQL perspective as the fragmentation is done by assigning a partition
+number to each fragment and mapping each partition to one of the servers, query rewriting is not required because the partitions are known to Ignite's query
+processor already and the query contains the correct relation names. Nevertheless, as again selection conditions on the relaxation attribute allow to answer
+queries based on the disease similarity metric and the clustering, the DDBS is capable of executing queries only on the server that hosts the corresponding
+fragment or partition by identifying the most similar cluster first and then using Ignite's SQL API (see
+\url{https://apacheignite-sql.readme.io/docs/java-sql-api} for details) in order to set the partition number for the query according to the identified 
+fragment. For example, a similarity-based rewriting and answering of the query in Example~\ref{sec:impl_qpro_exmp} as for the first approach is not necessary
+for the second approach as only the partition number has to be identified and set via the appropriate class method of the SqlQuery or SqlFieldsQuery of 
+Ignite's SQL API. 
+
+
+With the disease term similarity, flexible query answering by generalization of the selection condition on the relaxation attribute can be performed
+as query rewriting, too, for all the implementations. The reference implementation requires for substituting the comparison of the disease attribute to a 
+single constant symbol (a disease term) with a set of constant symbols (other possible disease terms). The ways how this can be done were also shown previously 
+in Example~\ref{sec:meth_fqa_exmp} where the generalized query with the set of constant symbols, which can be expressed in FOL as a disjunctive formula, was
+translated into SQL, e.g. with the help of an SQL \verb!IN! clause. Due to the fact that the clustering and the query generalization fit well together, the two
+developed approaches do not need a substitution of the selection condition with an SQL equivalent of the disjunctive FOL formula because the fragments or
+partitions inherently cover the more general sets of constant symbols that are equal to the corresponding clusters. This means that -- instead of substituting
+the selection condition by another expression -- it is simply omitted, and the query is adapted analogously to the similarity-based answering by restricting it 
+to that certain fragment that belongs to the cluster with the more general diseases (incl. the initial one) such that then all answers only need to be obtained
+from this fragment (or partition). Thus, for the materialized fragment approach only the relation names have to changed to the corresponding fragment whereas
+for the other approach again only the corresponding partition number has to be set via the SQL API. 
+
+The interaction of similarity-based and flexible query answering was also part of Example~\ref{sec:meth_fqa_exmp2} demonstrating the well-suitedness of both
+techniques as the query was rewritten to yield all answers solely from the aircraft fragment which on the one hand generalizes the query and on the other hand
+offers for efficient similarity-based query execution. Furthermore, overgeneralization \citep{Wiese2014} is avoided as the disease attribute of the obtained 
+answers is inherently restricted to terms of the same cluster providing semantically close answers instead of also too general answers.
+
+
+\todo[inline]{flexible answering}
