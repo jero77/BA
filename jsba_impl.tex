@@ -7,9 +7,11 @@
 The technical details of the implementation are discussed in the following sections. First of all, there will be given an overview of the technical 
 infrastructure in terms of a cluster of Ignite server nodes spread across physical machines in a network. Secondly, the clustering procedure adapting to the 
 approximation algorithm for clustering as described in \citet{Gonzales1985} is explained and its functionality under different similarity thresholds and term
-sets is illustrated.  
+sets is illustrated. After this, the reference implementation of the system which is used as a benchmark to compare the developed approaches to is explained.
+This is followed by a subsection investigating the two developed approaches technically. The last subsection deals with the challenges and benefits of query
+processing in the different implementation alternatives and how similarity-based and flexible answering can be realized in each of the implementations.
 
-\todo[inline]{Summarize remaining subsections, probably also intro to medical information system (e.g. how, simplif., data, relations, security, examples etc.)}
+\todo[inline]{Probably intro to medical information system (e.g. how, simplif., data, relations, security, examples etc.)}
 
 
 \subsection{Technical Infrastructure}
@@ -47,7 +49,7 @@ two nodes that represent the MeSH terms in the taxonomy or base on the informati
 
 For the sake of simplicity and due to the facts that, first of all, the UMLS::Similarity web interface
 (\url{http://maraca.d.umn.edu/cgi-bin/umls_similarity/umls_similarity.cgi}, see also \citep{UMLS::Sim}) is rather slow (ca. 20s per pairwise similarity 
-computation) and,secondly, an alternative local installation of the similarity module \citep{McInnes2009} would require a chargeable license for the SNOMED CT
+computation) and, secondly, an alternative local installation of the similarity module \citep{McInnes2009} would require a chargeable license for the SNOMED CT
 clinical terminology (Systematized Nomenclature of Human and Veterinary Medicine – Clinical Terms, see \url{http://www.snomed.org/}) as it is part of the
 underlying UMLS Metathesaurus, the implementation is here based on the path length measure and is restricted to a randomly chosen subset of maximal 100 terms 
 of all disease describing MeSH terms. Additionally, the web interface can not be used dynamically due to the high computation time. Instead, all pairwise
@@ -195,10 +197,12 @@ and the because of that required rewriting of queries is done automatically by t
 %\label{sec:impl_alter_...}
 \todo[inline]{Partitioning approach, cool sectionname}
 
-The second approach, \dotsi, also materializes the fragments analogously to the first approach but in an from the SQL perspective invisible way by assigning
+The second approach, \dots, also materializes the fragments analogously to the first approach but in an from the SQL perspective invisible way by assigning
 different partition numbers to the different fragments of the relations via the affinity function API instead of different relation names. The partitions of 
 the relations are then distributed and mapped to the servers. By doing so, the queries do not require to be rewritten as in the first approach because the 
-query processing is almost completely done by Ignite's query processor and the fragmentation is again fully transparent for the user.
+query processing is almost completely done by Ignite's query processor as the relation names are not different for each fragment like in the other approach 
+but the different fragments are distinguished by their partition numbers. Additionally, the fragmentation is again fully transparent for the user and hidden
+from SQL.
 
 
 
@@ -278,7 +282,7 @@ With the disease term similarity, flexible query answering by generalization of 
 as query rewriting, too, for all the implementations. The reference implementation requires for substituting the comparison of the disease attribute to a 
 single constant symbol (a disease term) with a set of constant symbols (other possible disease terms). The ways how this can be done were also shown previously 
 in Example~\ref{sec:meth_fqa_exmp} where the generalized query with the set of constant symbols, which can be expressed in FOL as a disjunctive formula, was
-translated into SQL, e.g. with the help of an SQL \verb!IN! clause. Due to the fact that the clustering and the query generalization fit well together, the two
+translated into SQL, e.g. with the help of an SQL \verb!IN!-clause. Due to the fact that the clustering and the query generalization fit well together, the two
 developed approaches do not need a substitution of the selection condition with an SQL equivalent of the disjunctive FOL formula because the fragments or
 partitions inherently cover the more general sets of constant symbols that are equal to the corresponding clusters. This means that -- instead of substituting
 the selection condition by another expression -- it is simply omitted, and the query is adapted analogously to the similarity-based answering by restricting it 
@@ -289,7 +293,5 @@ for the other approach again only the corresponding partition number has to be s
 The interaction of similarity-based and flexible query answering was also part of Example~\ref{sec:meth_fqa_exmp2} demonstrating the well-suitedness of both
 techniques as the query was rewritten to yield all answers solely from the aircraft fragment which on the one hand generalizes the query and on the other hand
 offers for efficient similarity-based query execution. Furthermore, overgeneralization \citep{Wiese2014} is avoided as the disease attribute of the obtained 
-answers is inherently restricted to terms of the same cluster providing semantically close answers instead of also too general answers.
-
-
-\todo[inline]{flexible answering}
+answers is inherently restricted to terms of the same cluster providing a semantically close result set instead of a result set that also includes too general
+answers.
