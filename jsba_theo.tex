@@ -354,7 +354,7 @@ relation $R$ and another server holds all the tuples of relation $S$ as shown in
             \end{tabular}
         }
     }
-\caption{Distribution of relations $R$ (Table~\ref{tab:r}) and $S$ (Table~\ref{tab:s}) to two servers}
+\caption{Distribution of relations $R$ (Table~\ref{tab:r}) and $S$ (Table~\ref{tab:s}) to two servers $S_1$ and $S_2$}
 \label{fig:dqp_rs_simple}
 \end{figure}
 
@@ -372,8 +372,8 @@ For example, have a look at the query
 \end{verbatim}
 which could be answered, e.g. by sending all the tuples in $S$ from $S_2$ to $S_1$ which would then be joined and selected locally and the result would be
 returned. Instead of sending all tuples in $S$ from $S_2$ to $S_1$, the selection condition \verb!S.c < 1! could be pushed down and evaluated locally on 
-$S_1$ to improve the execution by reducing the amount of tuples that has to be sent via the network. This results in a decrease of the by data transfer
-implied delay. Another possible, even more efficient computation could be done by decomposing the query and sending the subquery
+$S_2$ to improve the execution by reducing the amount of tuples that has to be sent via the network. This results in a decrease of the by data transfer
+implied delay. Another possibly even more efficient computation could be done by decomposing the query and sending the subquery
 \begin{verbatim}
     SELECT S.b FROM S WHERE S.c < 1
 \end{verbatim}

@@ -186,23 +186,32 @@ sake of simplicity, by concatenation of the underlying relation name, an undersc
 the horizontal fragments, that are now separate tables and not longer belong together syntactically from the DDBS's point of view, to the servers, a modified
 affinity function has to be explicitly provided and made available on all nodes. This affinity function handles the mapping of the materialized fragments to 
 the servers and also provides the similarity function for two disease terms that is required for both the clustering and the query rewriting and answering 
-(cf. Section~\ref{sec:impl_qpro_sbfq}). Furthermore, the collocation of the \verb!ILL!- and \verb!INFO!-fragments via a derived horizontal fragmentation can
-only be achieved by storing the personal information of patients (\verb!INFO!-tuples) at each server that hosts also information about a disease that this
-patient has, i.e. to each \verb!ILL!-fragment there is also an \verb!INFO!-fragment present on the same server for appropriate collocation. Still, the
-horizontal fragmentation and the materialization of the fragments of the relations as separate relations is still transparent for the user as the clustering 
-and the because of that required rewriting of queries is done automatically by the system.
+(cf. Section~\ref{sec:impl_qpro_sbfq}). Furthermore, the collocation of the \verb!ILL! and \verb!INFO! relation fragments via a derived horizontal 
+fragmentation can only be achieved by storing the personal information of patients (\verb!INFO!-tuples) at each server that hosts also information about a
+disease that this patient has, i.e. to each \verb!ILL! fragment there is also an \verb!INFO! fragment present on the same server for appropriate collocation.
+Still, the horizontal fragmentation and the materialization of the fragments of the relations as separate relations is still transparent for the user as the
+clustering and the because of that required rewriting of queries is done automatically by the system. For example, if a patient has a disease $x$ that belongs 
+to cluster $c_j$, then the patient's personal information will be stored in the relation \verb!INFO_j! that is collocated to the relation \verb!ILL_j!
+containing the tuple with the reference to the patient and information about disease $x$. It is possible that a patient has multiple diseases that not 
+necessarily belong to the same cluster and due to this the personal information of the patient may be stored redundantly in multiple materialized 
+fragments, too.
 
 
 \subsubsection{Partitioning Approach}
 %\label{sec:impl_alter_...}
-\todo[inline]{Partitioning approach, cool sectionname}
+\todo[inline]{cool sectionname}
 
 The second approach, \dots, also materializes the fragments analogously to the first approach but in an from the SQL perspective invisible way by assigning
-different partition numbers to the different fragments of the relations via the affinity function API instead of different relation names. The partitions of 
-the relations are then distributed and mapped to the servers. By doing so, the queries do not require to be rewritten as in the first approach because the 
-query processing is almost completely done by Ignite's query processor as the relation names are not different for each fragment like in the other approach 
-but the different fragments are distinguished by their partition numbers. Additionally, the fragmentation is again fully transparent for the user and hidden
-from SQL.
+different partition numbers to the different fragments of the relations via the affinity function API in the intended way instead of different relation names.
+The partitions of the partitioned relations are then distributed and mapped to the servers. By doing so, the queries do not require to be rewritten as in the
+first approach because the query processing is almost completely done by Ignite's query processor as the relation names are not different for each fragment 
+like in the other approach but the different fragments are distinguished by their partition numbers. Additionally, the fragmentation is again fully transparent 
+for the user and hidden from SQL. Collocation of the \verb!INFO! partitions to the \verb!ILL! partitions is also achieved with the help of the affinity function
+and the identification of the correct partition number that is inferred from the clustering, i.e. if a patient has disease $x$ that belongs to cluster $c_j$, 
+then partition $j$ of the \verb!ILL! relation stores the tuple stating that this patient has disease $x$ and additionally partition $j$ of the \verb!INFO! 
+relation is responsible for the tuple with the patient's personal information. Both partitions are hosted by the same server due to collocation, and personal
+patient data may be stored redundantly in multiple partitions. To guarantee collocation, this redundancy can not be avoided for the derived fragmentation in 
+both approaches.
 
 
 
@@ -234,7 +243,7 @@ For instance, assume the query
     SELECT * FROM ILL WHERE ILL.disease = 'Cough'
 \end{verbatim}
 and a clustering-based fragmentation as described in Example~\ref{sec:impl_clust_exmp} (for $\alpha=0.2$). The parsing of the query string results in a 
-traversable class hierarchy that also contains a comparison expression class, i.e. the comparison of the column reference \verb!ILL.diseases! to the constant 
+traversable class hierarchy that also contains a comparison expression class, i.e. the comparison of the column reference \verb!ILL.disease! to the constant 
 symbol \verb!'Cough'!, a disease term. Then, by calculating the similarity of the disease in the selection condition, a cluster with maximal similarity is
 identified, thus, the query can be rewritten to match the fragment that corresponds to the identified cluster. This is done by modifiying the in the 
 \verb!FROM! clause contained table expression, \verb!FROM ILL!, to reference the relevant fragment of the table:
@@ -295,3 +304,6 @@ techniques as the query was rewritten to yield all answers solely from the aircr
 offers for efficient similarity-based query execution. Furthermore, overgeneralization \citep{Wiese2014} is avoided as the disease attribute of the obtained 
 answers is inherently restricted to terms of the same cluster providing a semantically close result set instead of a result set that also includes too general
 answers.
+
+
+\todo[inline]{extensions e.g. web interface, \dots}

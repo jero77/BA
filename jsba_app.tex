@@ -55,7 +55,41 @@
 
 \end{enumerate}
 
-\newpage
+
+\subsection{Sample Queries for Flexible Query Answering}
+\label{app:flexqueries}
+
+\begin{enumerate}
+
+    \item \begin{verbatim}
+        SELECT p.* 
+        FROM INFO p, ILL i 
+        WHERE p.id = i.id 
+            AND i.disease = 'Liver Failure'
+    \end{verbatim}
+    
+    \item \begin{verbatim}
+        SELECT p.* 
+        FROM INFO p, ILL i 
+        WHERE p.id = i.id 
+            AND i.disease = 'Liver Failure'
+            AND p.age < 50
+    \end{verbatim}
+        
+    \item \begin{verbatim}
+        SELECT p.* 
+        FROM INFO p, ILL i1, ILL i2
+        WHERE p.id = i1.id 
+            AND p.id = i2.id 
+            AND i1.disease = 'Liver Failure' 
+            AND i2.disease = 'Hemoptysis'
+    \end{verbatim}
+
+\end{enumerate}
+
+
+
+% MeSH Terms and SPARQL query
 \subsection{MeSH Terms}
 \label{app:terms}
 
@@ -95,6 +129,8 @@ Mediastinal Emphysem; Bell Palsy; Port-Wine Stain; Intellectual Disability; Ling
 Intestinal Diseases; Gingivitis, Necrotizing Ulcerative; Trichuriasis; Tachycardia; Erythema Infectiosum; Impetigo; Pyomyositis; Hematocolpos; Cough;
 Mental Retardation, X-Linked
 
+
+\newpage
 \subsection{Clustering - Parameter $\alpha$}
 \label{app:alpha}
 
@@ -163,6 +199,8 @@ Mental Retardation, X-Linked
     \label{tab:app_100terms}
 \end{table}
 
+
+% Code listings
 \newpage
 \subsection{Clustering Java Code}
 \label{app:java}
