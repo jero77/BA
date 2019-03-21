@@ -99,7 +99,7 @@ implementations for the smaller database sizes. But as the size is increased by 
 in the materialized fragment approach than compared to the reference implementation whereas the other approach is only slightly slower (up to twice as long).
 Because of the requirement to rewrite the queries in the materialized fragment approach according to the localization program of the underlying fragmentation,
 the average execution time takes significantly longer in this approach as the rewritten query comprises one subquery per fragment that are all connected in a 
-big SQL \verb!UNION!, e.g. for $n$ fragments the rewritten query is
+big SQL \verb!UNION!, e.g. for $n$ fragments the rewritten query $Q_{rewritten}$ is
 \begin{verbatim}
     (SELECT ... FROM ILL_0 i, INFO_0 p WHERE ...)
     UNION
@@ -133,9 +133,14 @@ of the developed approaches.
 
 
 The time measurements for the execution of $Q_6$ are illustrated in Figure~\ref{fig:query6}. The execution of this query was only investigated for the scaling 
-factors 1, 10 and 100 as for the bigger factors the query execution time exceeded the timeout threshold of 10 minutes. What can be seen here is that firstly the 
-measurements for the reference implementation coincide with the measurements of the partition number approach and secondly the stair-like shape of the bars that
-belong to execution times of the materialized fragment approach as already seen before for $Q_4$ and $Q_5$.
+factors 1, 10 and 100 as for the bigger factors the query execution time exceeded the timeout threshold of 10 minutes. The interesting points here are firstly
+coincidence of the measurements for the reference implementation with the measurements of the partition number approach and secondly the stair-like shape of
+the bars that belong to execution times of the materialized fragment approach as already seen before for $Q_4$ and $Q_5$. The higher execution times for the
+materialized fragment approach are caused by the complexity of the rewritten query that looks very similar to the previously sketched $Q_{rewritten}$ but as the
+initial query contains a join of the relation \verb!ILL! with itself the corresponding localization program has to consider all pairs of two materialized
+\verb!ILL! fragments, i.e. for each materialized fragment table there is a subquery that has the same structure as $Q_{rewritten}$ with an additional join of
+that certain fragment table and all the subqueries, which are unions of subqueries themselves, are aggregated by \verb!UNION!s to one final query. The impact of
+this nesting of subqueries connected by unions on the query execution performance increases exponentially with the number of joined relations.
 
 \begin{figure}[h]
     \centering

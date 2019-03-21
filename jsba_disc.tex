@@ -34,3 +34,16 @@ techniques with a clustering-based fragmentation, this information could be quer
 fragments or partitions that contain relevant data. By doing so, the identified similar patients would still be semantically close to the examined one and not
 overgeneralized, i.e. searching for similar patient profiles under all patients that have a similar or even the same disease makes sense, but searching under all
 patients that suffer from some not closely related disease compared to the examined patient's disease is pointless.
+
+
+\todo[inline]{Forschungsfragen!!!}
+\begin{enumerate}
+    \item Verbessert sich die Laufzeit bei Anfragen an die verteilte Datenbank durch die Benutzung einer Clustering-basierten Fragmentierung der Daten
+        gegenüber anderen Fragmentierungen der Daten?
+    \item Does the usage of a clustering-based fragmentation of the data improve the execution time of queries against the DDB compared to other fragmentations?
+    \item Inwiefern beeinflusst die Größe der Datenmenge die Effizienz der Anfragebeantwortung? Skaliert die Effizienz gegenüber anderen Methoden sogar mit der
+        Größe?
+    \item How far does the size of the data set influence the efficiency of the query answering? Does the efficiency even scale with the size?
+    \item Wie effizient ist die flexible Anfragebeantwortung für die intelligente Fragmentierung?
+    \item How efficient is the flexible query answering for the intelligent fragmentation?
+\end{enumerate}
