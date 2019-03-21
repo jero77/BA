@@ -8,21 +8,21 @@
 \subsection{Sample Queries}
 \label{app:queries}
 
-\begin{enumerate}
+\begin{itemize}
 
-    \item \begin{verbatim}
+    \item[$Q_1$:] \begin{verbatim}
         SELECT avg(p.age)
         FROM INFO p
     \end{verbatim}
 
-    \item \begin{verbatim}
+    \item[$Q_2$:] \begin{verbatim}
         SELECT p.name, p.age, p.address 
         FROM ILL i, INFO p 
         WHERE i.id = p.id 
             AND i.disease='Liver Failure'
     \end{verbatim}
     
-    \item \begin{verbatim}
+    \item[$Q_3$:] \begin{verbatim}
         SELECT p.name, p.age, p.address 
         FROM ILL i1, ILL i2, INFO p 
         WHERE i1.id = p.id 
@@ -31,20 +31,20 @@
             AND i2.disease='Hemoptysis'
     \end{verbatim}
 
-    \item \begin{verbatim}
+    \item[$Q_4$:] \begin{verbatim}
         SELECT i.disease, p.* 
         FROM ILL i, INFO p 
         WHERE i.id = p.id
     \end{verbatim}
    
-    \item \begin{verbatim}
+    \item[$Q_5$:] \begin{verbatim}
         SELECT p.name, count(i.disease) 
         FROM ILL i, INFO p 
         WHERE i.id = p.id 
         GROUP BY p.name 
     \end{verbatim}
 
-    \item \begin{verbatim}
+    \item[$Q_6$:] \begin{verbatim}
         SELECT p.name, i1.disease, i2.disease 
         FROM ILL i1, ILL i2, INFO p 
         WHERE i1.id = p.id 
@@ -53,22 +53,22 @@
     \end{verbatim}
 
 
-\end{enumerate}
+\end{itemize}
 
 
 \subsection{Sample Queries for Flexible Query Answering}
 \label{app:flexqueries}
 
-\begin{enumerate}
+\begin{itemize}
 
-    \item \begin{verbatim}
+    \item[$Q_7$:] \begin{verbatim}
         SELECT p.* 
         FROM INFO p, ILL i 
         WHERE p.id = i.id 
             AND i.disease = 'Liver Failure'
     \end{verbatim}
     
-    \item \begin{verbatim}
+    \item[$Q_7'$:] \begin{verbatim}
         SELECT p.* 
         FROM INFO p, ILL i 
         WHERE p.id = i.id 
@@ -76,7 +76,7 @@
             AND p.age < 50
     \end{verbatim}
         
-    \item \begin{verbatim}
+    \item[$Q_8$:] \begin{verbatim}
         SELECT p.* 
         FROM INFO p, ILL i1, ILL i2
         WHERE p.id = i1.id 
@@ -85,7 +85,7 @@
             AND i2.disease = 'Hemoptysis'
     \end{verbatim}
 
-\end{enumerate}
+\end{itemize}
 
 
 

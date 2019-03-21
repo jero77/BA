@@ -197,21 +197,20 @@ necessarily belong to the same cluster and due to this the personal information 
 fragments, too.
 
 
-\subsubsection{Partitioning Approach}
-%\label{sec:impl_alter_...}
-\todo[inline]{cool sectionname}
+\subsubsection{Partition Number Approach}
+\label{sec:impl_alter_partnum}
 
-The second approach, \dots, also materializes the fragments analogously to the first approach but in an from the SQL perspective invisible way by assigning
-different partition numbers to the different fragments of the relations via the affinity function API in the intended way instead of different relation names.
-The partitions of the partitioned relations are then distributed and mapped to the servers. By doing so, the queries do not require to be rewritten as in the
-first approach because the query processing is almost completely done by Ignite's query processor as the relation names are not different for each fragment 
-like in the other approach but the different fragments are distinguished by their partition numbers. Additionally, the fragmentation is again fully transparent 
-for the user and hidden from SQL. Collocation of the \verb!INFO! partitions to the \verb!ILL! partitions is also achieved with the help of the affinity function
-and the identification of the correct partition number that is inferred from the clustering, i.e. if a patient has disease $x$ that belongs to cluster $c_j$, 
-then partition $j$ of the \verb!ILL! relation stores the tuple stating that this patient has disease $x$ and additionally partition $j$ of the \verb!INFO! 
-relation is responsible for the tuple with the patient's personal information. Both partitions are hosted by the same server due to collocation, and personal
-patient data may be stored redundantly in multiple partitions. To guarantee collocation, this redundancy can not be avoided for the derived fragmentation in 
-both approaches.
+The second approach, the "partition number" approach, also materializes the fragments analogously to the first approach but in an from the SQL perspective
+invisible way by assigning different partition numbers to the different fragments of the relations via the affinity function API in the intended way instead of
+different relation names. The partitions of the partitioned relations are then distributed and mapped to the servers. By doing so, the queries do not require to
+be rewritten as in the first approach because the query processing is almost completely done by Ignite's query processor as the relation names are not different
+for each fragment like in the other approach but the different fragments are distinguished by their partition numbers. Additionally, the fragmentation is again
+fully transparent for the user and hidden from SQL. Collocation of the \verb!INFO! partitions to the \verb!ILL! partitions is also achieved with the help of the
+affinity function and the identification of the correct partition number that is inferred from the clustering, i.e. if a patient has disease $x$ that belongs to
+cluster $c_j$, then partition $j$ of the \verb!ILL! relation stores the tuple stating that this patient has disease $x$ and additionally partition $j$ of the
+\verb!INFO! relation is responsible for the tuple with the patient's personal information. Both partitions are hosted by the same server due to collocation, 
+and personal patient data may be stored redundantly in multiple partitions. To guarantee collocation, this redundancy can not be avoided for the derived
+fragmentation in both approaches.
 
 
 
