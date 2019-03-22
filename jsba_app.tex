@@ -54,7 +54,7 @@
 
 
 \end{itemize}
-
+\newpage
 
 \subsection{Sample Queries for Flexible Query Answering}
 \label{app:flexqueries}
@@ -68,22 +68,14 @@
             AND i.disease = 'Liver Failure'
     \end{verbatim}
     
-    \item[$Q_7'$:] \begin{verbatim}
-        SELECT p.* 
+    \item[$Q_8$:] \begin{verbatim}
+        SELECT p.name, p.age 
         FROM INFO p, ILL i 
         WHERE p.id = i.id 
             AND i.disease = 'Liver Failure'
             AND p.age < 50
     \end{verbatim}
-        
-    \item[$Q_8$:] \begin{verbatim}
-        SELECT p.* 
-        FROM INFO p, ILL i1, ILL i2
-        WHERE p.id = i1.id 
-            AND p.id = i2.id 
-            AND i1.disease = 'Liver Failure' 
-            AND i2.disease = 'Hemoptysis'
-    \end{verbatim}
+    
 
 \end{itemize}
 

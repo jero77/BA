@@ -23,7 +23,7 @@ factors, there is a noticeable increase in the execution time because the amount
 might be caused by an accidentally imbalanced or adverse distribution of the data across the partitions in contrast to the other implementations.
 \begin{figure}[h]
     \centering
-    \includegraphics[scale=0.8]{charts/Query1.png}
+    \includegraphics[scale=0.8]{charts/Query1.pdf}
     \caption{Average query execution time in milliseconds of $Q_1$ (Appendix~\ref{app:queries})}
     \label{fig:query1}
 \end{figure}
@@ -38,7 +38,7 @@ fragment and query rewriting, the query execution is optimized.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[scale=0.9]{charts/Query2.png}
+    \includegraphics[scale=0.9]{charts/Query2.pdf}
     \caption{Average query execution time of $Q_2$ (Appendix~\ref{app:queries})}
     \label{fig:query2}
 \end{figure}
@@ -53,7 +53,7 @@ whereas the join is still pretty fast due to collocation, but a presumably bigge
 
 \begin{figure}[h]
     \centering
-    \includegraphics[scale=0.9]{charts/Query2WithoutReference.png}
+    \includegraphics[scale=0.9]{charts/Query2WithoutReference.pdf}
     \caption{Average query execution time of $Q_2$ (Appendix~\ref{app:queries}) without reference implementation}
     \label{fig:query2withoutref}
 \end{figure}
@@ -71,7 +71,7 @@ is distributed and requires for transferring tuples between the servers. A more 
 tuples as the collocation allows for a local join and avoids costly data transfer.
 \begin{figure}[h]
     \centering
-    \includegraphics[scale=0.9]{charts/Query3.png}
+    \includegraphics[scale=0.9]{charts/Query3.pdf}
     \caption{Average query execution time of $Q_3$ (Appendix~\ref{app:queries})}
     \label{fig:query3}
 \end{figure}
@@ -88,7 +88,7 @@ i.e. when both fragments are hosted by the same server, but involves data transf
 Due to this reasons, the execution of $Q_3$ is slightly slower than $Q_2$ but still the developed approaches outperform the reference implementation.
 \begin{figure}[h]
     \centering
-    \includegraphics[scale=0.9]{charts/Query3WithoutReference.png}
+    \includegraphics[scale=0.9]{charts/Query3WithoutReference.pdf}
     \caption{Average query execution time of $Q_3$ (Appendix~\ref{app:queries}) without reference implementation}
     \label{fig:query3withoutref}
 \end{figure}
@@ -118,14 +118,14 @@ yielding a more balanced data distribution that might be more advantageous for e
 of the developed approaches.
 \begin{figure}[h]
     \centering
-    \includegraphics[scale=0.8]{charts/Query4.png}
+    \includegraphics[scale=0.8]{charts/Query4.pdf}
     \caption{Average query execution time of $Q_4$ (Appendix~\ref{app:queries})}
     \label{fig:query4}
 \end{figure}
 
 \begin{figure}[h]
     \centering
-    \includegraphics[scale=0.8]{charts/Query5.png}
+    \includegraphics[scale=0.8]{charts/Query5.pdf}
     \caption{Average query execution time of $Q_5$ (Appendix~\ref{app:queries})}
     \label{fig:query5}
 \end{figure}
@@ -144,10 +144,24 @@ this nesting of subqueries connected by unions on the query execution performanc
 
 \begin{figure}[h]
     \centering
-    \includegraphics[scale=0.8]{charts/Query6.png}
+    \includegraphics[scale=0.8]{charts/Query6.pdf}
     \caption{Average query execution time of $Q_6$ (Appendix~\ref{app:queries})}
     \label{fig:query6}
 \end{figure}
 
 
 \todo[inline]{FAQ}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.75]{charts/Query7.pdf}
+    \caption{Average query execution time of $Q_7$ (Appendix~\ref{app:flexqueries})}
+    \label{fig:query7}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.75]{charts/Query8.pdf}
+    \caption{Average query execution time of $Q_8$ (Appendix~\ref{app:flexqueries})}
+    \label{fig:query8}
+\end{figure}

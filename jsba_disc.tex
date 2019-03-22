@@ -16,7 +16,12 @@
 As the implemented medical information system is only exemplary and the stored medical data is randomly generated without any connection to real data, security and
 privacy do not matter here. In contrast to this, security and privacy play a big role in real medical or healthcare applications that deal with sensitive patient
 data. Especially, if data is stored in a distributed infrastructure that is connected via a network and can be accessed remotely, the system offers many targets
-to attackers and security mechanisms are required to guarantee privacy regarding the sensitive information.
+to attackers and security mechanisms are required to guarantee privacy regarding the sensitive information. One possibility to achieve more secure communication for
+the information system is provided by \citetalias{Ignite} itself which, if enabled, allows that the Ignite nodes are connected securely by a configurable 
+\emph{SSL socket communication}. Additionally, \emph{authentication} mechanisms can be activated to secure the Ignite cluster such that users have to authorize 
+themselves with credentials if they want to access the cluster and the stored data. Currently, this feature is only available for a configuration of the cluster
+supporting the native persistent storage. Same goes for the \emph{Transparent Data Encryption} (TDE) -- another provided security mechanism -- that allows to 
+encrypt all data that is stored in a table or any backup file.
 
 % criticism umls sim
 The implemented information system demonstrates the capabilities of similarity-based and flexible query answering for medical data under a given similarity metric
@@ -35,6 +40,13 @@ fragments or partitions that contain relevant data. By doing so, the identified 
 overgeneralized, i.e. searching for similar patient profiles under all patients that have a similar or even the same disease makes sense, but searching under all
 patients that suffer from some not closely related disease compared to the examined patient's disease is pointless.
 
+
+% technical improvements
+From the technical side, further improvements to the medical information system could be made with a on-the-fly computation of the pairwise similarities of the MeSH
+disease terms instead of a precalculation of all similarity values via the \citetalias{UMLS::Sim} web interface 
+(\url{http://maraca.d.umn.edu/cgi-bin/umls_similarity/umls_similarity.cgi}). In order to achieve this, the disease taxonomy could be stored in a relation in the
+database as well allowing to program a custom SQL function which is also supported by Ignite's SQL engine. The function could read from the taxonomy data and 
+compute the similarity between to given disease terms, e.g. with an implementation of the shortest path length metric (cf. Section~\ref{sec:impl_clust}).
 
 \todo[inline]{Forschungsfragen!!!}
 \begin{enumerate}
