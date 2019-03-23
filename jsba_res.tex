@@ -11,16 +11,23 @@ fragmentations based on the underlying clustering were also investigated. The di
 (cf. Appendix~\ref{app:terms}) to only the first 10 or 30 terms or all 100 terms. Furthermore, the size of the database was scaled for each implementation with
 a scaling factor (SF) of 1 up to 10000 that is multiplied with the default number of \verb!INFO! tuples (50) and the default number of \verb!ILL! tuples (100),
 i.e. on average each patient has two diseases.
-The following bar charts display the average query execution time of 10 executions of a query in milliseconds on the y-axis in dependence on the different 
-scaling factors shown on the x-axis. In the legend, the different implementations are listed whereas
-"Materialized" and "Partitions" refer to the first (cf. Section~\ref{sec:impl_alter_mater}) and second (cf. Section~\ref{sec:impl_alter_partnum}) approach,
-respectively, and the attached numbers indicate the size of the underlying term set (10, 30 or 100) and "Reference" refers to the reference implementation 
-(cf. Section~\ref{sec:impl_refimpl}).
+The following bar charts in the figures display the average query execution time of 10 executions of a query in milliseconds on the y-axis in dependence on the
+different scaling factors shown on the x-axis. In the legend, the different implementations are listed whereas "Materialized" and "Partitions" refer to the first
+(cf. Section~\ref{sec:impl_alter_mater}) and second (cf. Section~\ref{sec:impl_alter_partnum}) approach, respectively, and the attached numbers indicate the size
+of the underlying term set (10, 30 or 100) and "Reference" refers to the reference implementation (cf. Section~\ref{sec:impl_refimpl}). 
+
+The presentation of the results is divided into two sections where Section~\ref{sec:res_sbqa} contains results of the query execution time measurements with 
+respect to the sample queries from Appendix~\ref{app:queries}, especially the focus lays on queries that can be processed similarity-based. The second section,
+Section~\ref{sec:res_faq}, deals with via generalization flexibly answered queries in combination with the clustering-based fragmentation.
+
+\subsection{Similarity-based Query Answering}
+\label{sec:res_sbqa}
 
 Figure~\ref{fig:query1} shows the average execution time of $Q_1$. As this query is selecting the average age of all persons in the database, 
 there can not be performed any intelligent execution based on the similarity metric together with the clustering of the data. Only for the last two scaling
 factors, there is a noticeable increase in the execution time because the amount of data to be scanned also increased. The outlier (Partitions100, SF=10000)
-might be caused by an accidentally imbalanced or adverse distribution of the data across the partitions in contrast to the other implementations.
+might be caused by an accidentally imbalanced or adverse distribution of the data across the partitions in contrast to the other implementations. In general,
+this query has almost equal execution times in all implementations.
 \begin{figure}[h]
     \centering
     \includegraphics[scale=0.8]{charts/Query1.pdf}
@@ -33,7 +40,7 @@ implementation of the developed approaches (cf. Figure~\ref{fig:query2}). Even f
 slightly longer and for the highest scaling factor the execution time of almost five seconds was approximately 50 times as long as the other execution times.
 This is because the reference implementation is unlike the developed approaches not capable of answering queries similarity-based as it lacks the
 clustering-based fragmentation for the relaxation attribute. The developed approaches, on the contrary, are able to perform similarity-based query answering 
-(cf. Section~\ref{sec:meth_sbqa}) for this query as it contains a selection condition on the relaxation attribute. Thus after identification of the relevant
+(cf. Section~\ref{sec:meth_sbqa}) for this query as it contains a selection condition on the relaxation attribute. Thus, after identification of the relevant
 fragment and query rewriting, the query execution is optimized.
 
 \begin{figure}[h]
@@ -150,7 +157,33 @@ this nesting of subqueries connected by unions on the query execution performanc
 \end{figure}
 
 
-\todo[inline]{FAQ}
+\subsection{Flexibly Answered Queries}
+\label{sec:res_faq}
+
+The two queries $Q_7$ and $Q_8$ (Appendix~\ref{app:flexqueries}) are evaluated under flexible query answering with respect to the clustering-based fragmentation
+and the similarity metric. The scaling factors 1 and 10 were not taken into account as they are only dependent on the quality of the connection of the client node
+to the server cluster and not on the query execution time which is negligible for the smaller data set sizes. Both queries contain a selection condition on the
+relaxation attribute \verb!ILL.disease! as this is required for a query to be answered flexibly. These selection conditions are generalized by anti-instantiation
+with the help of the underlying clustering which avoids overgeneralization \citep{Wiese2014}. The queries are generalized as described in 
+Section~\ref{sec:impl_qpro}, i.e. 
+\begin{itemize}
+    \item for the reference implementation the equals comparison of the relaxation attribute was substituted by an \verb!IN! clause that
+        lists all the other diseases inside the corresponding cluster,
+    \item for the materialized fragment approach the equals comparison of the relaxation attribute was omitted and the according fragment for the \verb!ILL! and 
+        \verb!INFO! relation was identified and rewritten in the query,
+    \item and for the partition number approach the comparison was also omitted and the identified partition number was set for the query via the API.
+\end{itemize}
+
+When comparing both charts (Figure~\ref{fig:query7} and \ref{fig:query8}), the first thing that can be seen is that the overall picture looks very similar in its
+structure but the scale on the y-axis is different. Actually, the execution times of $Q_8$ is approximately only half of the execution times of $Q_7$. This is
+due to the fact that the result set to $Q_8$ is presumably only half the size of the result set to $Q_7$, and because the selection condition on the patient age,
+\verb!p.age < 50!, can be pushed down an executed before the join with the \verb!INFO! relation reducing the tuples that are about to be joined by half. The more
+interesting points which are demonstrated by both bar charts is the outperforming of the developed approaches compared to the reference implementation. This is
+the result of the intelligent combination of the similarity-based answering techniques and the clustering of the relaxation attribute for flexible query answering
+(cf. Section~\ref{sec:meth_fqa_fqsba}). In contrast to this is the query execution in the reference implementation where all tuples have to be checked whether
+the contained value of the relaxation attribute matches one of the terms in the \verb!IN! clause. The evaluation of this disjunctive selection costs much more 
+time than the execution strategy for the other implementations, i.e. simple collection of all tuples contained in the corresponding fragment or partition that 
+inherently are conform to the disjunctive selection as they belong to the cluster that covers all the similar disease terms. 
 
 \begin{figure}[h]
     \centering
@@ -165,3 +198,14 @@ this nesting of subqueries connected by unions on the query execution performanc
     \caption{Average query execution time of $Q_8$ (Appendix~\ref{app:flexqueries})}
     \label{fig:query8}
 \end{figure}
+
+Furthermore, the time measurements
+for the materialized approach get better when increasing the term set size because the randomized data generation picks the disease terms from the set 
+in a uniformly-distributed kind. This uniform distribution results in less clusters and less materialized fragments that contain more tuples for smaller term 
+sets and more clusters and fragments containing less tuples for bigger terms sets such that the query execution time in this implementation depends on the size
+of the queried fragment. Again, this holds for both queries, $Q_7$ and $Q_8$, and the same also holds for the partition number approach that scales in the same
+way with the term set size due to the randomness of the data generation. Nevertheless, in both cases the execution of the queries is always, at least slightly 
+faster in the materialized approach than in the partition number approach.
+
+
+

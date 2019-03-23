@@ -1,23 +1,29 @@
 %!TEX root = jsba_main.tex
-% Discussion
+% Discussion and Conclusion
 
-\section{Discussion}
+\section{Discussion and Conclusion}
 \label{sec:disc}
 
-\begin{enumerate}
-    \item opportunity to show that you have understood the significance of your findings and that you are capable of applying theory in an independent manner
-    \item investigate a phenomenon from several different perspectives
-    \item question your findings
-    \item consider different interpretations
-\end{enumerate}
-
+The previously depicted results of the query executions in the different implementations show that the clustering-based fragmentation of the data improves the
+execution time of queries against the DDB significantly when comparing to the reference implementation that provides only an arbitrary, but balanced horizontal
+fragmentation of the data. The intelligent similarity-based answering enables the DDBS to speed up the execution of queries containing selection conditions on
+the relaxation attribute as the underlying clustering is not only meaningful but also useful when answering queries. In addition to this, the developed approaches
+and the similarity-based answering techniques scale well with the size of the database if the application of similarity-based answering facilitates the execution 
+enormously whereas the reference implementation's query execution times do not scale well with the size. The impact of this would be even better noticeable for
+much bigger data sets revealing the strengths of the developed approaches in comparison to the reference implementation. The combination of similarity-based and
+flexible query answering also outperforms the reference implementation as the clustering-based fragmentation can be brought into the query execution in an 
+intelligent and efficient fashion allowing for faster execution of generalized queries compared to the rewritten and generailzed query for an implementation
+without the clustering. On the other hand, there are also queries that can not be answered with the help of the proposed methods and, thus, can not make additional
+improvements to the execution of this query. In some cases queries even require for some extra rewriting to fit to the adapted database schema (materialized
+fragment approach) resulting in complex and long queries that do not suit the technical characteristics of the underlying database engine which produces longer
+execution times.
 
 % Security
 As the implemented medical information system is only exemplary and the stored medical data is randomly generated without any connection to real data, security and
 privacy do not matter here. In contrast to this, security and privacy play a big role in real medical or healthcare applications that deal with sensitive patient
 data. Especially, if data is stored in a distributed infrastructure that is connected via a network and can be accessed remotely, the system offers many targets
-to attackers and security mechanisms are required to guarantee privacy regarding the sensitive information. One possibility to achieve more secure communication for
-the information system is provided by \citetalias{Ignite} itself which, if enabled, allows that the Ignite nodes are connected securely by a configurable 
+to attackers and security mechanisms are required to guarantee privacy regarding the sensitive information. One possibility to achieve more secure communication 
+for the information system is provided by \citetalias{Ignite} itself which, if enabled, allows that the Ignite nodes are connected securely by a configurable 
 \emph{SSL socket communication}. Additionally, \emph{authentication} mechanisms can be activated to secure the Ignite cluster such that users have to authorize 
 themselves with credentials if they want to access the cluster and the stored data. Currently, this feature is only available for a configuration of the cluster
 supporting the native persistent storage. Same goes for the \emph{Transparent Data Encryption} (TDE) -- another provided security mechanism -- that allows to 
@@ -41,21 +47,13 @@ overgeneralized, i.e. searching for similar patient profiles under all patients 
 patients that suffer from some not closely related disease compared to the examined patient's disease is pointless.
 
 
-% technical improvements
-From the technical side, further improvements to the medical information system could be made with a on-the-fly computation of the pairwise similarities of the MeSH
-disease terms instead of a precalculation of all similarity values via the \citetalias{UMLS::Sim} web interface 
+% technical improvements: on-the-fly similarities, full SQL, replication
+From the technical side, further improvements to the medical information system could be made with a on-the-fly computation of the pairwise similarities of the 
+MeSH disease terms instead of a precalculation of all similarity values via the \citetalias{UMLS::Sim} web interface 
 (\url{http://maraca.d.umn.edu/cgi-bin/umls_similarity/umls_similarity.cgi}). In order to achieve this, the disease taxonomy could be stored in a relation in the
 database as well allowing to program a custom SQL function which is also supported by Ignite's SQL engine. The function could read from the taxonomy data and 
-compute the similarity between to given disease terms, e.g. with an implementation of the shortest path length metric (cf. Section~\ref{sec:impl_clust}).
-
-\todo[inline]{Forschungsfragen!!!}
-\begin{enumerate}
-    \item Verbessert sich die Laufzeit bei Anfragen an die verteilte Datenbank durch die Benutzung einer Clustering-basierten Fragmentierung der Daten
-        gegenüber anderen Fragmentierungen der Daten?
-    \item Does the usage of a clustering-based fragmentation of the data improve the execution time of queries against the DDB compared to other fragmentations?
-    \item Inwiefern beeinflusst die Größe der Datenmenge die Effizienz der Anfragebeantwortung? Skaliert die Effizienz gegenüber anderen Methoden sogar mit der
-        Größe?
-    \item How far does the size of the data set influence the efficiency of the query answering? Does the efficiency even scale with the size?
-    \item Wie effizient ist die flexible Anfragebeantwortung für die intelligente Fragmentierung?
-    \item How efficient is the flexible query answering for the intelligent fragmentation?
-\end{enumerate}
+compute the similarity between to given disease terms, e.g. with an implementation of the shortest path length metric (cf. Section~\ref{sec:impl_clust}). This 
+would also cancel the restriction of the term set size such that all disease terms of the MeSH data can be used in the database instead of only some of them.
+Furthermore, the system only supports conjunctive queries without any subqueries or other complex constructs. This restriction could also be relaxed in order to
+achieve full SQL-compatibility and a more powerful information system. Another desirable feature for the medical information system is replication of the stored 
+data, which is also issued in \citet{Wiese2014}, that guarantees fault-tolerance to a certain degree and improve reliability or accessibility.
