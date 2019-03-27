@@ -26,7 +26,7 @@ Furthermore, the implementation will be based on a pure in-memory storage where 
 storage of the data due to performance issues. The of \citetalias{Ignite} provided SQL-capable in-memory DDB instances can be spread across the network 
 via a set of interconnected Ignite nodes that form a so-called \emph{cluster}. Each node of the cluster can be hosted by a different physical machine 
 in a Java Virtual Machine (JVM), but there can be multiple nodes on the same machine, too. Even multiple nodes running in the same virtual machine are
-possible. With the underlying Client-Server architecture, a node can be either a server node, which is responsible for storing and processing data, or a
+possible. With the underlying Client-Server architecture (cf. Section~\ref{sec:theo_ddb_arch}), a node can be either a server node, which is responsible for storing and processing data, or a
 client node that is able to connect remotely to the cluster of server nodes and compute or query from the client side. Figure~\ref{fig:ign_cluster} shows
 a sample cluster consisting of 6 server nodes which are responsible for computations and storing data. This servers can be accessed remotely from clients
 that can connect to the cluster via an programming language API (e.g. Java), via a JDBC or ODBC connection or via a REST-API (see documentation for
@@ -52,10 +52,13 @@ In replicated mode, a balancing of the data load is achieved by a partitioning o
 equal size that are dispersed equally among all nodes of the cluster to exploit as much memory as possible on all nodes. However, even more memory is
 available if there is no replication of the data in form of redundant copies that would consume additional parts of the total available memory. 
 
-The partitioning is always a horizontal fragmentation of the data but the way how this is computed is only syntactically defined with hash functions, thus,
-there are no explicit selection conditions on a certain attribute of the relation that represent a horizontal fragment as described in the
-Section~\ref{sec:theo_ddb_frag}, and the assignment of tuples to the partitions of the relation they belong to is done rather arbitrarily. The only way to
-influence and change this assignment of a tuple to a partition is via an affinity function, which is explained in the following section.
+The partitioning is always a horizontal fragmentation (cf. Section~\ref{sec:theo_ddb_frag}) of the data but the way how this is computed is only syntactically
+defined with hash functions, thus, there are no explicit selection conditions on a certain attribute of the relation that represent a horizontal fragment as
+described in the Section~\ref{sec:theo_ddb_frag}, and the assignment of tuples to the partitions of the relation they belong to is done rather arbitrarily.
+The only way to influence and change this assignment of a tuple to a partition is via an affinity function, which is explained in the following section.
+In contrast to this, the later discussed clustering-based fragmentation from \citet{Wiese2014} is computed in a semantical way as the horizontal fragments are
+induced by the previously calculated clustering that provides a semantic guidance for the assignment of the tuples to the horizontal fragments, i.e. the data 
+distribution (cf. Section~\ref{sec:meth_cbfr}). 
 
 
 
@@ -74,11 +77,11 @@ attribute of a composite primary key of the relation. The concept of affinity co
 fragmentation of relations (cf. Section~\ref{sec:theo_ddb_frag}), i.e. the derived fragmentation also ensures that tuples from the derived horizontal 
 fragments are located at the same server where also the tuples reside with which they can and will be joined in SQL queries.
 
-Joins between partitioned relations require for collocation of the data that is about to be joined. Otherwise, a non-collocated distributed join has to be
-performed or the result set will be incomplete as the non-collocated parts of the data can not be joined locally by the nodes. If all the joined relations
-in the SQL query are collocated, the query can be evaluated locally by each node, because all the data they need to compute a correct result set regarding 
-their portion of the whole data in the cluster is available, i.e. stored by themselves. The query execution for this case is depicted in
-Figure~\ref{fig:ign_collocated} where the query $Q$ is sent from the client to each server node which executes the query $Q$ locally 
+Joins between partitioned relations require for collocation of the data that is about to be joined. Otherwise, a non-collocated distributed join 
+(cf. Section~\ref{sec:theo_dqp}) has to be performed or the result set will be incomplete as the non-collocated parts of the data can not be joined locally 
+by the nodes. If all the joined relations in the SQL query are collocated, the query can be evaluated locally by each node, because all the data they need to
+compute a correct result set regarding  their portion of the whole data in the cluster is available, i.e. stored by themselves. The query execution for this 
+case is depicted in Figure~\ref{fig:ign_collocated} where the query $Q$ is sent from the client to each server node which executes the query $Q$ locally 
 and returns the result set $R_i$ to the query according to its stored data set. The final result set is the accumulation of the result sets $R_1+R_2+R_3$
 which is meant as union of the result sets. This computation of the result set as union of locally obtained result sets is very similar to the localization
 program \cite[p.~199]{Ozsu1991} as introduced in Section~\ref{sec:theo_dqp_decomp} where the union of all the fragments of certain relations is used to
@@ -131,12 +134,12 @@ $A$ of the relation $R$.
 With the chosen relaxation attribute $A$ of a relation $R$ and a pairwise similarity $sim(a, b)$, $\pi_A(R) \times \pi_A(R) \to \mathbb{R}$, defined  
 for pairs of elements from the active domain $\pi_A(R)$ and according to the formal mathmatical definition of a metric, a clustering in terms of a 
 partitioning of the active domain into disjunctive subsets can be obtained by evaluating the similarities and assigning the elements to the clusters in
-a such way that the pairwise intracluster similarity is always at least as big as the pairwise intercluster similarity. This means that any element has 
-a higher similarity to elements of the same cluster than compared to elements from other clusters, thus, a cluster describes rather similar elements. 
-An appropriate criterion for determining how "similar" two elements have to be to belong to the same cluster is required and can be defined as a threshold
-parameter $\alpha$ and a \emph{head} element representing the cluster that enforce a minimal intracluster similarity \cite{Gonzales1985}. Under this
-restriction, for any element $a$ of a cluster, the corresponding $head$ element of this cluster and a given threshold $\alpha$ holds that 
-$sim(a,head) \geq \alpha$. 
+a such way that the pairwise intracluster similarity \citep{Gonzales1985} is always at least as big as the pairwise intercluster similarity. This means that
+any element has a higher similarity to elements of the same cluster than compared to elements from other clusters, thus, a cluster describes rather similar
+elements. An appropriate criterion for determining how "similar" two elements have to be to belong to the same cluster is required and can be defined as a
+threshold parameter $\alpha$ and a \emph{head} element which is an element from the cluster that represents the cluster in the following (cf. \cite{Wiese2014}).
+With this definition, a minimal intracluster similarity can be enforced \citep{Gonzales1985}. Under this restriction, for any element $a$ of a cluster $c$, the
+corresponding head element of this cluster, $head \in c$, and a given similarity threshold $\alpha$ it holds that $sim(a,head) \geq \alpha$. 
 
 
 The different clusters contained in the clustering can be used to obtain a horizontal fragmentation of a relation by partitioning the relation along the 
@@ -155,7 +158,7 @@ of $\pi_A(R)$ with threshold $\alpha$ and head elements $head_i \in c_i$ for the
 \end{itemize}
 \end{definition}
 
-The completeness for the clustering, that is required in Definition~\ref{def:cbfr} and in Definition~2 in \cite{Wiese2014},
+The completeness for the clustering, that is required in the previously stated Definition~\ref{def:cbfr} and in Definition~2 from \cite{Wiese2014},
 provides coverage for all elements of the active domain $\pi_A(R)$ regarding the relaxation attribute $A$. Furthermore, the mapping of any element of the
 active domain to one of the clusters is functional which makes the clusters pairwise disjoint, hence, all the by the clustering induced fragments are also
 disjoint and non-redundant as each tuple is assigned to only fragment according to its relaxation attribute's maximum similarity to one of the clusters.
@@ -238,15 +241,16 @@ the corresponding derived, horizontal fragments.
 \subsection{Similarity-based Query Answering}
 \label{sec:meth_sbqa}
 
-A DDBS that uses a clustering-based fragmentation and derived fragmentations -- as described above -- is capable of answering queries regarding the 
-similarity defined for the relaxation attribute underlying the clustering. This means that, for certain queries, the system is able to utilize the 
-similarity metric in order to determine the relevant fragments to obtain an answer to the given query. As the data is distributed along the clustering to
-the horizontal fragments of the fragmented relation, the query execution can also be distributed according to the clustering to be executed as close as
-possible to the location of the data, i.e. in the best case it is sufficient to execute the query only locally without any data transfer at a single 
-server which hosts the single relevant data fragment. Finding the appropriate fragment depends on whether the query contains at least one selection
-condition on the relaxation attribute of the clustering. If so, the corresponding fragment can be identified by evaluating the similarity of the element
-from the active domain, to which the relaxation attribute is compared, to the head elements of the different clusters. The maximal similarity of the 
-comparison element and all cluster heads determines the matching cluster as well as the induced horizontal fragment. 
+A DDBS that uses a clustering-based fragmentation and derived fragmentations -- as described above in Section~\ref{sec:meth_cbfr}-- is capable of answering 
+queries regarding the similarity defined for the relaxation attribute underlying the clustering. This means that, for certain queries, the system is able to
+utilize the similarity metric in order to determine the relevant fragments to obtain an answer to the given query. As the data is distributed along the 
+clustering to the horizontal fragments of the fragmented relation, the query execution can also be distributed (cf. Section~\ref{sec:theo_dqp}) according to
+the clustering to be executed as close as possible to the location of the data, i.e. in the best case it is sufficient to execute the query only locally 
+without any data transfer at a single server which hosts the single relevant data fragment. Finding the appropriate fragment depends on whether the query
+contains at least one selection condition on the relaxation attribute of the clustering. If so, the corresponding fragment can be identified by evaluating
+the similarity of the element from the active domain, to which the relaxation attribute is compared, to the head elements of the different clusters. The
+maximal similarity of the comparison element and all cluster heads determines the matching cluster as well as the induced horizontal fragment 
+(cf. Section~\ref{sec:theo_ddb_frag}). 
 
 \begin{exmp}
 \label{sec:meth_sbqa_exmp}
@@ -398,7 +402,7 @@ similarity measures \citep{Haarbrandt2018}.
 \label{sec:meth_fqa_fqsba}
 
 As already mentioned previously, query generalization by anti-instantiation and similarity-based answering suit each other well. Generalized queries
-that are anti-instatiated based on a selection on the relaxation attribute, i.e. the query is extended regarding the underlying similarity to match all
+that are anti-instantiated based on a selection on the relaxation attribute, i.e. the query is extended regarding the underlying similarity to match all
 elements from the most similar cluster corresponding to the constant symbol of the selection, can also be processed in a similarity-based way. In
 \cite{Wiese2014}, flexible answering is done by query rewriting and redirecting the rewritten with the help of a lookup table that maps the 
 clustering-induced, horizontal fragments to the servers they are hosted on. The redirection allows to avoid costly distributed joins as the relevant

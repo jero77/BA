@@ -39,9 +39,9 @@ For the second query, $Q_2$, the reference implementation's average query execut
 implementation of the developed approaches (cf. Figure~\ref{fig:query2}). Even for the smaller scaling factors except for the SF of 1, the execution time was
 slightly longer and for the highest scaling factor the execution time of almost five seconds was approximately 50 times as long as the other execution times.
 This is because the reference implementation is unlike the developed approaches not capable of answering queries similarity-based as it lacks the
-clustering-based fragmentation for the relaxation attribute. The developed approaches, on the contrary, are able to perform similarity-based query answering 
-(cf. Section~\ref{sec:meth_sbqa}) for this query as it contains a selection condition on the relaxation attribute. Thus, after identification of the relevant
-fragment and query rewriting, the query execution is optimized.
+clustering-based fragmentation (Section~\ref{sec:meth_cbfr}) for the relaxation attribute. The developed approaches, on the contrary, are able to perform
+similarity-based query answering (cf. Section~\ref{sec:meth_sbqa}) for this query as it contains a selection condition on the relaxation attribute. Thus, 
+after identification of the relevant fragment and query rewriting, the query execution is optimized.
 
 \begin{figure}[h]
     \centering
@@ -117,12 +117,12 @@ big SQL \verb!UNION!, e.g. for $n$ fragments the rewritten query $Q_{rewritten}$
     (SELECT ... FROM ILL_n i, INFO_n p WHERE ...)
 \end{verbatim}
 (cf. Example~\ref{sec:theo_dqp_exmp2}). The stair-like appearance of the three corresponding bars (orange, yellow, green) mirror the total number of clusters 
-and fragments of the relations from the underlying clustering-based fragmentation This complex and long query can not be executed as fast as the non-rewritten
-queries. A reason why the query execution in the partition number approach is a little bit slower than the reference implementation could be a disadvantageous
-distribution of data to the different fragments leading to a non-optimal performance when executing the query. Additionally, the by \citetalias{Ignite} provided
-automatic partitioning and distribution of the data can be handled in a more balanced way as the DDBS strives to equalize the load on all participating nodes
-yielding a more balanced data distribution that might be more advantageous for execution of the queries in comparison to the clustering-influenced distribution
-of the developed approaches.
+and fragments of the relations from the underlying clustering-based fragmentation (Section~\ref{sec:meth_cbfr}). This complex and long query can not be executed
+as fast as the non-rewritten queries. A reason why the query execution in the partition number approach is a little bit slower than the reference implementation
+could be a disadvantageous distribution of data to the different fragments leading to a non-optimal performance when executing the query. Additionally, the by
+\citetalias{Ignite} provided automatic partitioning and distribution of the data can be handled in a more balanced way as the DDBS strives to equalize the load 
+on all participating nodes yielding a more balanced data distribution that might be more advantageous for execution of the queries in comparison to the
+clustering-influenced distribution of the developed approaches (cf. Sections~\ref{sec:impl_alter_mater} and \ref{sec:impl_alter_partnum}).
 \begin{figure}[h]
     \centering
     \includegraphics[scale=0.8]{charts/Query4.pdf}
@@ -147,7 +147,8 @@ materialized fragment approach are caused by the complexity of the rewritten que
 initial query contains a join of the relation \verb!ILL! with itself the corresponding localization program has to consider all pairs of two materialized
 \verb!ILL! fragments, i.e. for each materialized fragment table there is a subquery that has the same structure as $Q_{rewritten}$ with an additional join of
 that certain fragment table and all the subqueries, which are unions of subqueries themselves, are aggregated by \verb!UNION!s to one final query. The impact of
-this nesting of subqueries connected by unions on the query execution performance increases exponentially with the number of joined relations.
+this nesting of subqueries connected by unions on the query execution performance increases exponentially with the number of joined relations. The automatic
+rewriting of the query in the materialized fragment approach is not supported by system (yet), and the rewriting has to be done manually. 
 
 \begin{figure}[h]
     \centering

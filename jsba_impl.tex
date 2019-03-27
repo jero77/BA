@@ -9,19 +9,21 @@ infrastructure in terms of a cluster of Ignite server nodes spread across physic
 approximation algorithm for clustering as described in \citet{Gonzales1985} is explained and its functionality under different similarity thresholds and term
 sets is illustrated. After this, the reference implementation of the system which is used as a benchmark to compare the developed approaches to is explained.
 This is followed by a subsection investigating the two developed approaches technically. The last subsection deals with the challenges and benefits of query
-processing in the different implementation alternatives and how similarity-based and flexible answering can be realized in each of the implementations.
+processing in the different implementation alternatives and how similarity-based (Section~\ref{sec:meth_sbqa}) and flexible answering 
+(Section~\ref{sec:meth_fqa}) can be realized in each of the implementations.
 
 
 \subsection{Technical Infrastructure}
 
 The distributed \citetalias{Ignite} databases underlying the sample medical information system that is evaluated here is represented by a cluster of three
-Ignite nodes where each of the nodes runs in a JVM and is hosted by one of three servers. The three servers are provided by the "Gesellschaft für 
-wissenschaftliche Datenverarbeitung mbH Göttingen" (GWDG) via a cloud server service and form the technical infrastructure to support data storage and physical
-data distribution. Each server has a publicly available ip address and a private ip address that is only visible for the other servers in the same subnet. 
-A total of 24~GB memory for the cloud is split equally among all machines and each server has 4 processors. The nodes can communicate via the links of the
-subnet they all belong to and each node can be accessed by its public ip address. Any Ignite client node can connect remotely to the cluster and access the 
-data stored by the server nodes. The server nodes have to be started manually with a certain configuration file that specifies all required information, e.g.
-information about the distributed tables and the affinity functions to be used for partitioning and collocation.
+Ignite nodes (cf. Section~\ref{sec:meth_ign}) where each of the nodes runs in a JVM and is hosted by one of three servers. The three servers are provided by the
+"Gesellschaft für wissenschaftliche Datenverarbeitung mbH Göttingen" (GWDG) via a cloud server service and form the technical infrastructure to support data
+storage and physical data distribution. Each server has a publicly available ip address and a private ip address that is only visible for the other servers 
+in the same subnet. A total of 24~GB memory for the cloud is split equally among all machines and each server has 4 processors. The nodes can communicate via 
+the links of the subnet they all belong to and each node can be accessed by its public ip address. Any Ignite client node can connect remotely to the cluster
+and access the data stored by the server nodes. The server nodes have to be started manually with a certain configuration file that specifies all required
+information, e.g. information about the distributed tables and the affinity functions to be used for partitioning (cf. Section~\ref{sec:meth_ign_panre}) and
+collocation (cf. Section~\ref{sec:meth_ign_affc}).
 
 \subsection{Clustering}
 \label{sec:impl_clust}
@@ -58,13 +60,15 @@ at run time whenever needed.
 The clustering itself is implemented as a Java method (see Appendix~\ref{app:java_clustering}) that takes as input a list of all possible values for the
 relaxation attribute, i.e. a list of MeSH terms as strings, and returns a list of clusters, implemented as class "Cluster" (see
 Appendix~\ref{app:java_cluster}). The code is an implementation of the pseudocode from Listing~2 in \cite{Wiese2014} and the similarity threshold alpha is
-defined as class variable. The clustering starts with a single cluster containing the whole active domain and an arbitrarily chosen head and then identifies
-the minimal similarity inside the cluster between all terms from the active domain and the cluster head. In the following, there are created new clusters with 
-new head elements based on the minimal similarity of a term to the head of a cluster where it belongs to as long as the similarity threshold is not exceeded 
-and all terms are reassigned if they are more similar to the head of the new created cluster. The procedure iterates as long as there are still elements inside
-one of the clusters that have a similarity to the corresponding head element that is lower than the similarity treshold alpha. Hence, the iteration proceeds
-until each element of the active domain is clustered such that the minimal similarity with regards to the threshold $\alpha$ from Definition~\ref{def:cbfr}
-can be ensured. The following example shows how a clustering is computed for a given set of disease terms and the pairwise similarities of the diseases.
+defined as class variable. The clustering starts with a single cluster (line~6--19) containing the whole active domain and an arbitrarily chosen head element 
+from the cluster (cf. Section~\ref{sec:meth_cbfr}) and then identifies the minimal similarity inside the cluster between all terms from the active domain 
+and the cluster head (line~22--27). In the following, there are created new clusters with new head elements based on the minimal similarity of a term to the 
+head of a cluster where it belongs to as long as the similarity threshold is not exceeded and all terms are reassigned if they are more similar to the head
+of the new created cluster (line~30--94). The procedure iterates as long as there are still elements inside one of the clusters that have a similarity to the
+corresponding head element that is lower than the similarity treshold alpha (while-condition in line~31). Hence, the iteration proceeds until each element of 
+the active domain is clustered such that the minimal similarity with regards to the threshold $\alpha$ from Definition~\ref{def:cbfr} can be ensured. The 
+obtained clustering is finally returned and used later to induce a horizontal fragmentation (cf. Definition~\ref{def:cbfr}).
+The following example shows how a clustering is computed for a given set of disease terms and the pairwise similarities of the diseases.
 
 \begin{exmp}
 \label{sec:impl_clust_exmp}
@@ -94,10 +98,10 @@ similar to respiratory diseases, and vice versa.
     \label{tab:impl_similarities}
 \end{table}
 
-Let $\alpha=0.2$. The clustering procedure starts by creating the first cluster $c_1$ with an arbitrarily chosen head, e.g. the first disease of the set 
-($head_1="Asthma"$), and moves all remaining terms to the cluster's subset. In the next step, the minimal similarity of any disease term to the cluster head, 
-$s_{min}=\min\limits_{a \in c_1}~sim(a, head_1)$, is calculated and compared to the similarity threshold. As the minimal intracluster similarity still is below
-the threshold, $s_{min}=0.1429 < 0.2=\alpha$, the identified minimizing disease term is chosen to be the head element of the next cluster, i.e. 
+Let $\alpha=0.2$. The clustering procedure starts by creating the first cluster $c_1$ that is represented by an arbitrarily chosen head, e.g. the first disease 
+of the set ($head_1="Asthma"$), and moves all remaining terms to the cluster's subset. In the next step, the minimal similarity of any disease term to the 
+cluster head, $s_{min}=\min\limits_{a \in c_1}~sim(a, head_1)$, is calculated and compared to the similarity threshold. As the minimal intracluster similarity
+still is below the threshold, $s_{min}=0.1429 < 0.2=\alpha$, the identified minimizing disease term is chosen to be the head element of the next cluster, i.e. 
 $\argmin\limits_{a \in c_1}~sim(a, head_1)="Tibial Fracture"=head_2 \in c_2$. After this step, all diseases of cluster $c_1$ that are more similar to the
 fracture, that is, the other fracture disease, than to asthma will be reassigned to the cluster $c_2$. The clustering computation is complete as the minimal 
 intracluster similarities for all clusters are above the thresold: 
@@ -117,19 +121,19 @@ the respiratory diseases.
 \label{sec:impl_clust_alpha}
 
 The similarity threshold $\alpha$ which is used in the computation of the clustering of the active domain of the relaxation attribute (\verb!Disease!) 
-determines how big the similarity of a term to the head of a cluster has to be at least such that they will be assigned to the same cluster. By choosing an
-appropriate threshold, it is assured that no two diseases, represented by terms, that have no significant similarity at all belong to the same cluster and are 
-subsequently seen as similar diseases. Of course, the chosen similarity measure is rather simple and the threshold was chosen arbitrarily as not the full
-MeSH taxonomy, i.e. all disease terms in this case, was considered and only the simplest measure based solely on the path length of the shortest path between
-two diseases was used to obtain the similarity values. Appendix~\ref{app:alpha} shows how the number of clusters and also the average number of terms per
-cluster for the different term subsets (10, 30 or 100 terms) varies when scaling the similarity threshold parameter. Like shown, an alpha value of at least
-$0.2$ always caused the clustering to contain a lot of clusters whereas the corresponding active domain subsets of each cluster often only contained a head
-atom, thus, a that big value is not reasonable and far from the idea behind a clustering that clusters similar diseases and allows for similarity-based and
-flexible answering. For $\alpha=0.1$, the two smallest term subset lead to a clustering consisting of only one cluster with all the terms in it 
-(cf. Appendix~\ref{app:alpha_10terms}, \ref{app:alpha_30terms}), which indicates that for these two subsets the minimal similarity of two diseases was higher 
-than $0.1$, and the biggest term subset lead to 3 big clusters. In conclusion, the chosen value for $\alpha$ should be between $0.1$ and $0.2$ as other values
-would cause an unreasonable clustering and for the further evaluations the chosen value for alpha was fixed for the different term subsets, i.e. for 10 and 100
-terms $\alpha=0.12$ and for 30 terms $\alpha=0.15$.
+determines how big the similarity of a term to the head of a cluster has to be at least such that they will be assigned to the same cluster 
+(cf. Definition~\ref{def:cbfr}). By choosing an appropriate threshold, it is assured that no two diseases, represented by terms, that have no significant
+similarity at all, belong to the same cluster and are subsequently seen as similar diseases. Of course, the chosen similarity measure is rather simple and the
+threshold was chosen arbitrarily as not the full MeSH taxonomy, i.e. all disease terms in this case, could be considered and only the simplest measure based 
+solely on the path length of the shortest path between two diseases was used to obtain the similarity values. Appendix~\ref{app:alpha} shows how the number of 
+clusters and also the average number of terms per cluster for the different term subsets (10, 30 or 100 terms) varies when scaling the similarity threshold
+parameter. Like shown, an alpha value of at least $0.2$ always caused the clustering to contain a lot of clusters whereas the corresponding active domain 
+subsets of each cluster often only contained a head element, thus, a that big value is not reasonable and far from the idea behind a clustering that clusters
+similar diseases and allows for similarity-based and flexible answering. For $\alpha=0.1$, the two smallest term subset lead to a clustering consisting of only
+one cluster with all the terms in it (cf. Appendix~\ref{app:alpha_10terms}, \ref{app:alpha_30terms}), which indicates that for these two subsets the minimal
+similarity of two diseases was higher than $0.1$, and the biggest term subset lead to 3 big clusters. In conclusion, the chosen value for $\alpha$ should be
+between $0.1$ and $0.2$ as other values would cause an unreasonable clustering and for the further evaluations the chosen value for alpha was fixed for the
+different term subsets, i.e. for 10 and 100 terms $\alpha=0.12$ and for 30 terms $\alpha=0.15$.
 
 
 \subsection{Ignite Reference Implementation}
@@ -218,9 +222,9 @@ fragmentation in both approaches.
 Most of the query processing and execution is left up to \citetalias{Ignite} itself as it incorporates a parser as well as distribution and optimization
 mechanisms for SQL queries. Especially, if data is collocated and can be executed in a collocated fashion instead of a non-collocated execution, the cluster 
 can benefit from the collocation and benefit from the application of optimizations with more efficient query answering. However, in order to bring the
-intelligence into the application by utilizing the knowledge about the clustering-based fragmentation of the stored data, additional query rewriting and
-redirection are both required and helpful when trying to avoid costly distributed joins across all nodes in the cluster and further optimize the execution 
-with the help of similarity-based query answering.
+intelligence into the application by utilizing the knowledge about the clustering-based fragmentation (Section~\ref{sec:meth_cbfr}) of the stored data, 
+additional query rewriting and redirection are both required and helpful when trying to avoid costly distributed joins (cf. Section~\ref{sec:meth_ign_affc})
+across all nodes in the cluster and further optimize the execution with the help of similarity-based query answering (cf. Section~\ref{sec:meth_sbqa}).
 
 \subsubsection{Rewriting}
 \label{sec:impl_qpro_rewr}
@@ -270,14 +274,14 @@ query once for each fragment to obtain a fragment-specific subquery, and then ma
 only works for not too complex queries as it relies on the improved data locality of the collocation. For instance, queries requiring for inter-fragment joins,
 i.e. queries that do not join the relations \verb!ILL! and \verb!INFO! via their collocating attribute (identificators of the persons) or queries that join a
 relation with itself like the last query of Appendix~\ref{app:queries}, are computationally highly expensive as they have to be rewritten for all combinations
-of any two or even more fragments. This results in a combinatorial explosion of the number of subqueries in both MapReduce and the localization program which
-causes bad performance at the query execution.
+of any two or even more fragments. This results in a combinatorial explosion of the number of subqueries in both MapReduce and the localization program 
+(cf. Section~\ref{sec:theo_ddb_frag}) which causes bad performance at the query execution.
 
 In case of the second approach, where fragments of the relations are hidden from the SQL perspective as the fragmentation is done by assigning a partition
 number to each fragment and mapping each partition to one of the servers, query rewriting is not required because the partitions are known to Ignite's query
 processor already and the query contains the correct relation names. Nevertheless, as again selection conditions on the relaxation attribute allow to answer
-queries based on the disease similarity metric and the clustering, the DDBS is capable of executing queries only on the server that hosts the corresponding
-fragment or partition by identifying the most similar cluster first and then using Ignite's SQL API (see
+queries based on the disease similarity metric and the clustering (Section~\ref{sec:meth_cbfr}), the DDBS is capable of executing queries only on the server 
+that hosts the corresponding fragment or partition by identifying the most similar cluster first and then using Ignite's SQL API (see
 \url{https://apacheignite-sql.readme.io/docs/java-sql-api} for details) in order to set the partition number for the query according to the identified 
 fragment. For example, a similarity-based rewriting and answering of the query in Example~\ref{sec:impl_qpro_exmp} as for the first approach is not necessary
 for the second approach as only the partition number has to be identified and set via the appropriate class method of the SqlQuery or SqlFieldsQuery of 
@@ -300,5 +304,5 @@ The interaction of similarity-based and flexible query answering was also part o
 techniques as the query was rewritten to yield all answers solely from the aircraft fragment which on the one hand generalizes the query and on the other hand
 offers for efficient similarity-based query execution. Furthermore, overgeneralization \citep{Wiese2014} is avoided as the disease attribute of the obtained 
 answers is inherently restricted to terms of the same cluster providing a semantically close result set instead of a result set that also includes too general
-answers.
+answers (cf. Section~\ref{sec:meth_fqa_anti}).
 
