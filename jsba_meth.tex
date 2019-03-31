@@ -17,7 +17,7 @@ details of how all these methods and techniques match or have to be adapted to t
 \label{sec:meth_ign}
 
 \citetalias{Ignite} is desribed as a "memory-centric distributed database, caching, and processing platform for transactional, analytical, and streaming
-workloads delivering in-memory speeds at petabyte scale" (\citetalias{Ignite}, see also \url{https://apacheignite.readme.io/docs} for the full
+workloads delivering in-memory speeds at petabyte scale" (The Apache Ignite Software~\citet{Ignite}, see \url{https://apacheignite.readme.io/docs} for the full
 documentation).
 Its main features are distributed in-memory storage as well as optionally persistent storage of data on the disk that can be treated as a distributed, join
 supporting SQL database or as a distributed key-value in-memory data grid. There are a lot more features provided by \citetalias{Ignite} that are not of
@@ -137,7 +137,7 @@ partitioning of the active domain into disjunctive subsets can be obtained by ev
 a such way that the pairwise intracluster similarity \citep{Gonzales1985} is always at least as big as the pairwise intercluster similarity. This means that
 any element has a higher similarity to elements of the same cluster than compared to elements from other clusters, thus, a cluster describes rather similar
 elements. An appropriate criterion for determining how "similar" two elements have to be to belong to the same cluster is required and can be defined as a
-threshold parameter $\alpha$ and a \emph{head} element which is an element from the cluster that represents the cluster in the following (cf. \cite{Wiese2014}).
+threshold parameter $\alpha$ and a \emph{head} element which is an element from the cluster that represents the cluster in the following (cf. \citet{Wiese2014}).
 With this definition, a minimal intracluster similarity can be enforced \citep{Gonzales1985}. Under this restriction, for any element $a$ of a cluster $c$, the
 corresponding head element of this cluster, $head \in c$, and a given similarity threshold $\alpha$ it holds that $sim(a,head) \geq \alpha$. 
 
@@ -145,7 +145,7 @@ corresponding head element of this cluster, $head \in c$, and a given similarity
 The different clusters contained in the clustering can be used to obtain a horizontal fragmentation of a relation by partitioning the relation along the 
 disjunctive subsets of elements from the active domain with respect to the relaxation attribute. Each cluster corresponds to one horizontal fragment where
 the tuples are mapped to a fragment based on the membership of the relaxation attribute's value in the tuple to the subset of elements in a cluster. This 
-can be defined as follows (cf. \cite[Definition~2]{Wiese2014}):
+can be defined as follows (cf. \citet[Definition~2]{Wiese2014}):
 
 \begin{definition} \label{def:cbfr}
 Given the active domain $\pi_A(R)$ regarding a relaxation attribute $A$ of a relation instance $R$, and a complete clustering $C=\{c_i|i=1,...,n\}$
@@ -298,12 +298,12 @@ similar answer.
 
 \subsubsection{Query Generalization}
 \label{sec:meth_fqa_qgen}
-In general, queries can be answered flexibly by \emph{deductive generalization} \citep{Gaasterland1992, Wiese2014} that expresses that in first-order logic
+In general, queries can be answered flexibly by \emph{deductive generalization} (cf. \citet{Gaasterland1992} and \citet{Wiese2014}) that expresses that in first-order logic
 (FOL) a formula $\Psi(X,Y)$ over the free variables contained in vectors $X$ and $Y$, where $X$ and $Y$ contain only different free variables, deductively
 generalizes the formula $\Phi(X)$ if for a given knowledge base $\Sigma$ holds that $\Sigma \vDash \forall X \exists Y (\Phi(X) \to \Psi(X,Y))$ 
-(cf. Definition~1 in \cite{Wiese2014}). In a special case, a knowledge base can be a relational (distributed) database that describes a logical language by
+(cf. Definition~1 in \citet{Wiese2014}). In a special case, a knowledge base can be a relational (distributed) database that describes a logical language by
 its relations as the predicate symbols, a domain of all constant symbols which occur in the table columns and a set of variables to express queries 
-(cf. \cite{Wiese2014}). For instance, the relation $Products$ from the previous examples would be represented by the predicate symbol $Products(x,y,z)$
+(cf. \citet{Wiese2014}). For instance, the relation $Products$ from the previous examples would be represented by the predicate symbol $Products(x,y,z)$
 and the query from Example~\ref{sec:meth_sbqa_exmp} could be expressed as the logical formula $Q(N,P)=Products(N,P,"Airplane")$, that binds the free 
 variables $N$ and $P$ to name and price, respectively, of all tuples in the database that have the category airplane. 
 

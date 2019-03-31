@@ -38,7 +38,8 @@ this query has almost equal execution times in all implementations.
 For the second query, $Q_2$, the reference implementation's average query execution time took with increasing relation sizes always longer than any
 implementation of the developed approaches (cf. Figure~\ref{fig:query2}). Even for the smaller scaling factors except for the SF of 1, the execution time was
 slightly longer and for the highest scaling factor the execution time of almost five seconds was approximately 50 times as long as the other execution times.
-This is because the reference implementation is unlike the developed approaches not capable of answering queries similarity-based as it lacks the
+This is because the reference implementation is unlike the developed approaches not capable of answering queries similarity-based (Section~\ref{sec:meth_sbqa})
+as it lacks the
 clustering-based fragmentation (Section~\ref{sec:meth_cbfr}) for the relaxation attribute. The developed approaches, on the contrary, are able to perform
 similarity-based query answering (cf. Section~\ref{sec:meth_sbqa}) for this query as it contains a selection condition on the relaxation attribute. Thus, 
 after identification of the relevant fragment and query rewriting, the query execution is optimized.

@@ -276,7 +276,7 @@ partitions are held as backup copies for the primary partition.
 \subsubsection{Advantages and Disadvantages of DDBMS}
 Using distributed databases for storing and managing information can be advantageous. As already mentioned, the distribution of the data across multiple 
 servers can provide features like higher availability of the data, which can come from failure tolerance, as well as more efficient interaction with the
-DDBS. Several advantages of distributed database systems are (cf. \citep{Jadhav2017} and \cite[pp.~8ff.]{Ozsu1991}):
+DDBS. Several advantages of distributed database systems are (cf. \citet{Jadhav2017} and \citet[pp.~8ff.]{Ozsu1991}):
 
 \begin{enumerate}
     \item Local Autonomy: Data that is frequently accessed from a certain user group can be placed at the site which is the closest one to the user group
@@ -293,7 +293,7 @@ more complex appearance of a DDBS compared to the centralized database concept \
 the system to be less efficient if the design is not well-suited to the application's requirements what can lead to bad resource usage and high
 communication costs in the interconnecting network. More issues are security of system and data, which demand some extra effort in terms of protection
 because the sites and data fragments are not centralized but remote making them more vulnerable if not secured accordingly, and economics where more
-infrastructure and hardware for a distribution to multiple sites come along with higher costs \cite{Kumar2013}.
+infrastructure and hardware for a distribution to multiple sites come along with higher costs \citep{Kumar2013}.
 
 
 \subsection{Distributed Query Processing}
@@ -389,7 +389,7 @@ to the server $S_1$. The results of both queries could then be joined locally at
 
 The Example~\ref{sec:theo_dqp_exmp} indicates the requirement and the possibilities of \emph{distributed query processing} strategies that allow for
 transforming a query stated against the database, e.g. written in SQL, into an execution plan consisting of relational algebra instructions for the
-database which yield the correct result set for the query in an optimal way (cf. \cite[p.~174]{Ozsu1991}, \citep{Sattler2009DistQuer}). However, under a 
+database which yield the correct result set for the query in an optimal way (cf. \citet[p.~174]{Ozsu1991} and \citet{Sattler2009DistQuer}). However, under a 
 distributed environment, the relational algebra alone is not sufficient to process the queries as it lacks operators for sending and retrieving data from
 another server to complete the answer computation \cite[p.~175]{Ozsu1991}, thus, distributed query processing strategies come along with more difficulties.
 Because of this and because of the widespread subproblems, that range from the used languages over the optimized resource usage to the possibilities and 
@@ -399,23 +399,23 @@ issues brought into the system by fragmentation and replication, only several ch
 \subsubsection{Query Decomposition \& Data Localization}
 \label{sec:theo_dqp_decomp}
 
-\emph{Query decomposition} means the process of rewriting the query to a normalized form (cf. \cite[p.~21,pp.189f.]{Ozsu1991}), followed by a semantical
-analysis, a simplification of the query and a rewriting and restructuring to a relational algebra query \cite[p.~183]{Ozsu1991}. These four steps provide
+\emph{Query decomposition} means the process of rewriting the query to a normalized form (cf. \citet[p.~21,pp.189f.]{Ozsu1991}), followed by a semantical
+analysis, a simplification of the query and a rewriting and restructuring to a relational algebra query \citep[p.~183]{Ozsu1991}. These four steps provide
 as their result an algebraic query that can be optimized, e.g. as discussed in Example~\ref{sec:theo_dqp_exmp} for a SQL query where sending all tuples
 from one server to another server is obviously less efficient than reducing the amount of data that has to be transmitted across the network between the
 servers, whereas the real optimization is applied to the rewritten algebraic query, which can be displayed by a \emph{relational algebra tree}
-(cf. \cite[Figure~8.3, p.~195]{Ozsu1991}), and not to the SQL query directly. The actual distribution of the data does not play any role here because
+(cf. \citet[Figure~8.3, p.~195]{Ozsu1991}), and not to the SQL query directly. The actual distribution of the data does not play any role here because
 yet only global relations are considered when transforming into an algebra query.
 
 Fragmentation and replication, as discussed in Section~\ref{sec:theo_ddb_frag} and Section~\ref{sec:theo_ddb_repl}, respectively, influence the query
 execution strategy as they require for a distribution of the query itself to possibly multiple servers, too, in order to get the complete and correct 
 result set. For the sake of simplicity and due to the fact that the replication will not be implemented later, it is assumed that the data is only 
 fragmented horizontally and not replicated, i.e. every tuple is assigned to exactly one fragment. This also enables for the reconstruction of the original,
-global relations by reverting the fragmentation. This so-called \emph{localization program} \cite[p.~199]{Ozsu1991} obtained by reverting the 
+global relations by reverting the fragmentation. This so-called \emph{localization program} \citep[p.~199]{Ozsu1991} obtained by reverting the 
 fragmentation can be expressed as operations of the relational algebra. This was already discussed in Example~\ref{sec:theo_ddb_exmp} where the
 fragmentation of the relation $R$ was reversible by the union of all the horizontal fragments of $R$. Hence, a very simple, but rather inefficient way to
 rewrite the actual pyhsical distribution of the data into the query is to substitute each global relation in the algebra query by its localization program 
-\cite[p.~199]{Ozsu1991}.
+\citep[p.~199]{Ozsu1991}.
 
 \begin{exmp}
 \label{sec:theo_dqp_exmp2}
@@ -437,7 +437,7 @@ and data transfer.
 
 As seen previously in Example~\ref{sec:theo_dqp_exmp2}, to a given fragmentation there can exist rewritten queries that are more efficient as the pure
 localization program substitution as they realize simplifications facilitated by the nature of the fragmentation and its induced physical distribution of
-the data. This \emph{reduction techniques} \cite[p.~199]{Ozsu1991} are dependent on the type of fragmentation, i.e. whether it is a (primary/derived)
+the data. This \emph{reduction techniques} \citep[p.~199]{Ozsu1991} are dependent on the type of fragmentation, i.e. whether it is a (primary/derived)
 horizontal or vertical fragmentation or even hybrid fragmentation, and they are applied as rules in order to make use of the possible simplifications and 
 improvements regarding the query. In \citet[pp.~199ff.]{Ozsu1991} there are described the rules of reduction for the different fragmentation types and 
 partially for several relational algebra operators like joins or selections.
@@ -447,15 +447,15 @@ partially for several relational algebra operators like joins or selections.
 \label{sec:theo_dqp_opt}
 Distributed queries, that have been rewritten in terms of query decomposition and data localization as described briefly in the previous section, are
 furthermore improved by an \emph{optimizer} that searches for approximately optimal strategies on how to execute a certain query and prevents the 
-execution from following rather bad strategies \cite[p.~210]{Ozsu1991}. This is mainly done by selecting a certain ordering of the algebraic operations, 
+execution from following rather bad strategies \citep[p.~210]{Ozsu1991}. This is mainly done by selecting a certain ordering of the algebraic operations, 
 which have to be performed upon the query execution, by minimizing the predicted execution costs of alternative orderings and by additional 
-communication-based operations \cite[pp.~210f.]{Ozsu1991}, whereas the predicted execution costs strongly depend on the costs for communication in the 
+communication-based operations \citep[pp.~210f.]{Ozsu1991}, whereas the predicted execution costs strongly depend on the costs for communication in the 
 network but are also influenced by occuring local processing costs, e.g. the time or overhead a server needs to fetch a certain amount of tuples from a
 relation. Furthermore, the prediction of the costs for execution alternatives takes other database statistics, e.g. about the fragmented relations and 
-their schema or about cardinalities of intermediate results \cite[pp.214ff.]{Ozsu1991}, i.e. an estimation of the size of the according intermediate result 
+their schema or about cardinalities of intermediate results \citep[pp.214ff.]{Ozsu1991}, i.e. an estimation of the size of the according intermediate result 
 set in terms of numbers of tuples, into account. For example, the size of the result set of a join of two relations, $J=R \bowtie S$, is of maximal
 size only if all tuples from $R$ can be joined with each tuple from $S$, i.e. a cartesian product of the two relations. Then, the result set encompasses 
-$card(J)=card(R)*card(S)$ tuples (cf. \cite[p.~215]{Ozsu1991}). On the other side, the result set of the join could as well be empty when no tuples of both
+$card(J)=card(R)*card(S)$ tuples (cf. \citet[p.~215]{Ozsu1991}). On the other side, the result set of the join could as well be empty when no tuples of both
 relations are able to be joined. Therefore, a lower and an upper bound for the cardinality of any join of two relations could be provided as $card(J)>=0$
 and $card(J)<=card(R)*card(S)$, respectively. Based on this estimations, query execution plans can be modified in order to get the, in terms of efficiency
 or performance, most valuable execution.

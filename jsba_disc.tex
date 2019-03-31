@@ -7,9 +7,10 @@
 The previously depicted results of the query executions in the different implementations (Section~\ref{sec:res}) show that the clustering-based fragmentation 
 (cf. Section~\ref{sec:meth_cbfr}) of the data improves the execution time of queries against the DDB significantly when comparing to the reference implementation 
 that provides only an arbitrary, but balanced horizontal fragmentation (cf. Section~\ref{sec:theo_ddb_frag}) of the data. The intelligent similarity-based answering
-(cf. Section\ref{sec:meth_sbqa}) enables the DDBS to speed up the execution of queries containing selection conditions on the relaxation attribute as the underlying
+(cf. Section~\ref{sec:meth_sbqa}) enables the DDBS to speed up the execution of queries containing selection conditions on the relaxation attribute as the underlying
 clustering is not only meaningful but also useful when answering queries. In addition to this, the developed approaches and the similarity-based answering techniques
-scale well with the size of the database if the application of similarity-based answering facilitates the execution enormously whereas the reference implementation's
+scale well with the size of the database if the application of similarity-based answering (cf. Section~\ref{sec:impl_qpro_rewr}) facilitates the execution enormously
+whereas the reference implementation's
 query execution times do not scale well with the size. The impact of this would be even better noticeable for much bigger data sets revealing the strengths of the
 developed approaches in comparison to the reference implementation. The combination of similarity-based and flexible query answering 
 (cf. Section~\ref{sec:meth_fqa_fqsba}) also outperforms the reference implementation as the clustering-based fragmentation can be brought into the query execution 
@@ -20,9 +21,13 @@ fragment approach, Section~\ref{sec:impl_alter_mater}) resulting in complex and 
 database engine which produces longer execution times.
 
 % Security
-As the implemented medical information system is only exemplary and the stored medical data is randomly generated without any connection to real data, security and
-privacy do not matter here. In contrast to this, security and privacy play a big role in real medical or healthcare applications that deal with sensitive patient
-data. Especially, if data is stored in a distributed infrastructure that is connected via a network and can be accessed remotely, the system offers many targets
+As the implemented medical information system (Section~\ref{sec:impl}) is only exemplary and the stored medical data is randomly generated without any connection to
+real data, security and privacy do not matter here. 
+In contrast to this, this two aspects play a big role in real medical or healthcare applications that deal with sensitive patient data as there is an increase in
+vulnerabilities and threats for big data applications in the healthcare industry (cf. \citet{Patil2014}). This is also revealed
+in the study of \citet{Wilkowska2012} where the empirical investigation showed the endorsement and demand for security and privacy, especially from females and
+healthy adults.
+Furthermore, if data is stored in a distributed infrastructure that is connected via a network and can be accessed remotely, the system offers many targets
 to attackers and security mechanisms are required to guarantee privacy regarding the sensitive information. One possibility to achieve more secure communication 
 for the information system is provided by \citetalias{Ignite} itself which, if enabled, allows that the Ignite nodes are connected securely by a configurable 
 \emph{SSL socket communication}. Additionally, \emph{authentication} mechanisms can be activated to secure the Ignite cluster such that users have to authorize 
